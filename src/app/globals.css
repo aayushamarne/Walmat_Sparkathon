@@ -24,3 +24,103 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #0071dc;
+  color: white;
+}
+
+.search {
+  width: 50%;
+  padding: 0.5rem;
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+  padding: 0.5rem 1rem;
+  background: #f8f8f8;
+  margin: 0;
+}
+
+.navbar li {
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+.hero-img {
+  width: 100%;
+  height: auto;
+}
+
+.categories {
+  display: flex;
+  justify-content: space-around;
+  padding: 1rem;
+}
+
+.category-card {
+  padding: 1rem;
+  background: #eee;
+  border-radius: 8px;
+}
+
+.deals {
+  padding: 1rem;
+  background: #f0f8ff;
+}
+
+.deal-grid {
+  display: flex;
+  gap: 1rem;
+}
+
+.deal-card {
+  background: white;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  flex: 1;
+}
+
+.footer {
+  padding: 1rem;
+  background: #222;
+  color: white;
+  text-align: center;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+.animate-slide-out-right { /* You might need specific logic to apply this on close */
+  animation: slideOutRight 0.3s ease-out forwards;
+}
+
+
+
