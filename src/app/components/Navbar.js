@@ -40,7 +40,7 @@ const Navbar = () => {
               (category) => (
                 <a
                   key={category}
-                  href="#"
+                  href={category}
                   className="hover:text-blue-600 transition-colors"
                 >
                   {category}

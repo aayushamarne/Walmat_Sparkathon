@@ -1,7 +1,11 @@
-// components/Header.jsx
+'use client';
 import React from 'react';
+import Link from 'next/link';
+import { useAuth } from '../../../hooks/useAuth';
 
 const Header = () => {
+  const { user } = useAuth();
+
   return (
     <header className="bg-blue-600 text-white w-full">
       <div className="max-w-7xl mx-auto px-4 py-2">
@@ -13,12 +17,8 @@ const Header = () => {
               <span className="material-symbols-outlined text-yellow-400">star</span>
             </div>
             <nav className="hidden md:flex space-x-6">
-              <a href="#" className="hover:text-yellow-400 transition-colors">
-                Departments
-              </a>
-              <a href="#" className="hover:text-yellow-400 transition-colors">
-                Services
-              </a>
+              <a href="#" className="hover:text-yellow-400 transition-colors">Departments</a>
+              <a href="#" className="hover:text-yellow-400 transition-colors">Services</a>
             </nav>
           </div>
 
@@ -38,19 +38,25 @@ const Header = () => {
 
           {/* Right: Action Icons */}
           <div className="flex items-center space-x-4">
-            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors">
+            <div className="flex items-center space-x-1 hover:text-yellow-400 transition-colors">
               <span className="material-symbols-outlined">account_circle</span>
-              <span className="hidden lg:block">Sign In</span>
-            </button>
+              {user ? (
+                <Link href="/account">
+                  <span className="hidden lg:block">Account</span>
+                </Link>
+              ) : (
+                <Link href="/login">
+                  <span className="hidden lg:block">Sign In</span>
+                </Link>
+              )}
+            </div>
             <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors">
               <span className="material-symbols-outlined">favorite</span>
               <span className="hidden lg:block">Reorder</span>
             </button>
             <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors relative">
               <span className="material-symbols-outlined">shopping_cart</span>
-              <span className="absolute -top-2 -right-2 bg-yellow-500 text-gray-800 rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                0
-              </span>
+              <span className="absolute -top-2 -right-2 bg-yellow-500 text-gray-800 rounded-full w-5 h-5 text-xs flex items-center justify-center">0</span>
             </button>
           </div>
         </div>
