@@ -7,7 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/Tryllect', {
+
+
+
+mongoose.connect('mongodb+srv://jadhavsanyog400:uV4rQncnzmhMQxu2@tryllectdb.ugskpj5.mongodb.net/?retryWrites=true&w=majority&appName=TryllectDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 }).then(() => console.log("MongoDB connected"))
