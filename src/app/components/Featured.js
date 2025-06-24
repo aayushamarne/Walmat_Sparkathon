@@ -85,7 +85,7 @@ const Featured = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-2xl font-bold text-blue-600">
+                    <span className="text-xl font-bold text-blue-600">
                       ${product.price}
                     </span>
                     <span className="text-gray-500 line-through ml-2">

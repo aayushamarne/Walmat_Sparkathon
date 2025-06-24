@@ -30,8 +30,8 @@ const Header = () => {
                 placeholder="Search everything at Walmart online and in store"
                 className="w-full px-4 py-2 rounded-full text-gray-800 pr-12 bg-white"
               />
-              <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 p-2 rounded-full transition-colors">
-                <span className="material-symbols-outlined text-gray-800">search</span>
+              <button className="absolute px-4 px-2 right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 items-center object-contain rounded-full transition-colors">
+                <span className="material-symbols-outlined mt-2 text-gray-800">search</span>
               </button>
             </div>
           </div>
