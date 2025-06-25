@@ -8,8 +8,6 @@ app.use(cors());
 app.use(express.json());
 
 
-
-
 mongoose.connect('mongodb+srv://jadhavsanyog400:uV4rQncnzmhMQxu2@tryllectdb.ugskpj5.mongodb.net/?retryWrites=true&w=majority&appName=TryllectDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true,

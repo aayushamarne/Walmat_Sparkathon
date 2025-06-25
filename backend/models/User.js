@@ -9,6 +9,12 @@ const UserSchema = new mongoose.Schema({
   role: String,
   avatar_url: String,
 
+    size: {
+    height_cm: Number,
+    weight_kg: Number,
+    shirt_size: { type: String, enum: ['S', 'M', 'L', 'XL', 'XXL'] }
+  },
+
   skin_profile: {
     skin_type: String,
     skin_tone: String,
@@ -51,6 +57,7 @@ const UserSchema = new mongoose.Schema({
       ordered_at: String,
     }
   ],
+  store_name: String,
 
   created_at: String,
   last_login: String,
