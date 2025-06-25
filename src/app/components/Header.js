@@ -10,16 +10,23 @@ const Header = () => {
     <header className="bg-blue-600 text-white w-full">
       <div className="max-w-7xl mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
-          {/* Left Section: Logo and Links */}
+          {/* Left Section: Logo and Location */}
           <div className="flex items-center space-x-8">
+            {/* Logo */}
             <div className="flex items-center space-x-2">
               <span className="text-2xl font-bold">Walmart</span>
               <span className="material-symbols-outlined text-yellow-400">star</span>
             </div>
-            <nav className="hidden md:flex space-x-6">
-              <a href="#" className="hover:text-yellow-400 transition-colors">Departments</a>
-              <a href="#" className="hover:text-yellow-400 transition-colors">Services</a>
-            </nav>
+
+            {/* Location Box */}
+            <div className="hidden md:flex items-center bg-blue-700 px-4 py-2 rounded-full space-x-2 hover:bg-blue-800 transition-colors cursor-pointer max-w-[260px] overflow-hidden">
+              <span className="material-symbols-outlined text-yellow-400">location_on</span>
+              <div className="flex flex-col leading-tight text-sm whitespace-nowrap overflow-hidden">
+                <span className="font-semibold">Pickup or delivery?</span>
+                <span className="text-white text-xs truncate">Mumbai, 400001 • Walmart Local Store</span>
+              </div>
+              <span className="material-symbols-outlined ml-auto">expand_more</span>
+            </div>
           </div>
 
           {/* Middle: Search Bar */}
@@ -30,8 +37,8 @@ const Header = () => {
                 placeholder="Search everything at Walmart online and in store"
                 className="w-full px-4 py-2 rounded-full text-gray-800 pr-12 bg-white"
               />
-              <button className="absolute px-4 px-2 right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 items-center object-contain rounded-full transition-colors">
-                <span className="material-symbols-outlined mt-2 text-gray-800">search</span>
+              <button className="absolute px-2 right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 rounded-full transition-colors">
+                <span className="material-symbols-outlined mt-1 text-gray-800">search</span>
               </button>
             </div>
           </div>
