@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaPhone, FaStore } from "react-icons/fa";
 
 const Register = () => {
   const { register } = useAuth();
@@ -18,10 +18,16 @@ const Register = () => {
     role: "customer",
     avatar_url: "",
     skin_profile: { skin_type: "normal", skin_tone: "medium" },
+    size: {
+      height_cm: 0,
+      weight_kg: 0,
+      shirt_size: "M"
+    },
     preferences: { preferred_categories: [], notifications_enabled: true },
     wishlist: [],
     cart: [],
     orders: [],
+    store_name: "", // For sellers
     created_at: new Date().toISOString(),
     last_login: new Date().toISOString(),
     status: "active"
@@ -32,21 +38,19 @@ const Register = () => {
     setForm({ ...form, [name]: value });
   };
 
-  const handleSkinChange = (e) => {
-    setForm({
-      ...form,
-      skin_profile: {
-        ...form.skin_profile,
-        [e.target.name]: e.target.value
-      }
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     await register(form);
+    if (form.role === "seller") {
+      alert("Account Created Successfully");
+    router.push("/sellerDashboard");
+  } else {
+    alert("Account Created! Check you Account details.")
     router.push("/");
+  }
+
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-100 to-violet-200 px-4">
@@ -58,16 +62,23 @@ const Register = () => {
           </div>
         </div>
 
-        {/* Title */}
         <h2 className="text-2xl font-bold text-center text-gray-900">Sign Up</h2>
-        <p className="text-sm text-center text-gray-500 mb-6">Create a new account</p>
+        <p className="text-sm text-center text-gray-500 mb-4">Create a new {form.role} account</p>
 
-        {/* Tabs */}
-        <div className="flex mb-4 bg-gray-100 rounded-full p-1">
-          <Link href="/login" className="w-1/2 text-center py-2 text-gray-600 hover:text-violet-600 font-semibold transition">
-            Sign In
-          </Link>
-          <button className="w-1/2 bg-violet-600 text-white py-2 rounded-full font-semibold">Sign Up</button>
+        {/* Role Toggle */}
+        <div className="flex justify-center space-x-2 mb-4">
+          <button
+            onClick={() => setForm({ ...form, role: "customer" })}
+            className={`px-4 py-1 rounded-full font-semibold ${form.role === "customer" ? "bg-violet-600 text-white" : "bg-gray-200 text-gray-600"}`}
+          >
+            Customer
+          </button>
+          <button
+            onClick={() => setForm({ ...form, role: "seller" })}
+            className={`px-4 py-1 rounded-full font-semibold ${form.role === "seller" ? "bg-violet-600 text-white" : "bg-gray-200 text-gray-600"}`}
+          >
+            Seller
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -133,36 +144,22 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Skin Profile */}
-          {/* <div className="flex space-x-4">
-            <div className="w-1/2">
-              <label className="block text-sm font-medium text-gray-600 mb-1">Skin Type</label>
-              <select
-                name="skin_type"
-                value={form.skin_profile.skin_type}
-                onChange={handleSkinChange}
-                className="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
-              >
-                <option value="normal">Normal</option>
-                <option value="dry">Dry</option>
-                <option value="oily">Oily</option>
-                <option value="combination">Combination</option>
-              </select>
+          {/* Seller Specific Field */}
+          {form.role === "seller" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">Store Name</label>
+              <div className="relative">
+                <FaStore className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  name="store_name"
+                  placeholder="Your Store Name"
+                  className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
-            <div className="w-1/2">
-              <label className="block text-sm font-medium text-gray-600 mb-1">Skin Tone</label>
-              <select
-                name="skin_tone"
-                value={form.skin_profile.skin_tone}
-                onChange={handleSkinChange}
-                className="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
-              >
-                <option value="fair">Fair</option>
-                <option value="medium">Medium</option>
-                <option value="dark">Dark</option>
-              </select>
-            </div>
-          </div> */}
+          )}
 
           {/* Submit */}
           <button
@@ -173,7 +170,6 @@ const Register = () => {
           </button>
         </form>
 
-        {/* Redirect */}
         <p className="text-sm text-center text-gray-600 mt-4">
           Already have an account?{" "}
           <Link href="/login" className="text-violet-600 hover:underline">

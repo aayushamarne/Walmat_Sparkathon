@@ -45,13 +45,13 @@ const Header = () => {
 
           {/* Right: Action Icons */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-1 hover:text-yellow-400 transition-colors">
-              <span className="material-symbols-outlined">account_circle</span>
+            <div className="flex justify-center space-x-1 hover:text-yellow-400 transition-colors">
               {user ? (
-                <Link href="/account">
-                  <span className="hidden lg:block">Account</span>
-                </Link>
-              ) : (
+    <Link href="/account" className="flex items-center space-x-1">
+      <span className="material-symbols-outlined">account_circle</span>
+      <span className="hidden lg:block">Account</span>
+    </Link>
+  ) : (
                 <Link href="/login">
                   <span className="hidden lg:block">Sign In</span>
                 </Link>
