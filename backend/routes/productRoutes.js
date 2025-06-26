@@ -60,11 +60,13 @@ router.post('/add', async (req, res) => {
     session.endSession();
   }
 });
-
-// GET All Products
+// GET All or Filtered Products
 router.get('/products', async (req, res) => {
   try {
-    const products = await Product.find({});
+    const { type } = req.query;
+    const filter = type ? { type } : {};
+
+    const products = await Product.find(filter);
     res.json({ success: true, products });
   } catch (error) {
     res.status(500).json({ 
@@ -73,5 +75,34 @@ router.get('/products', async (req, res) => {
     });
   }
 });
+
+
+
+router.get('/products/:productId', async (req, res) => {
+  try {
+    const product = await Product.findOne({ product_id: req.params.productId });
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.delete('/products/:productId', async (req, res) => {
+  try {
+    const result = await Product.deleteOne({ product_id: req.params.productId });
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 
 module.exports = router;

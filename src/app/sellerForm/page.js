@@ -130,49 +130,49 @@ const SellerDashboard = () => {
       return updated;
     });
   };
+const handleImageUpload = async (e, path) => {
+  const file = e.target.files[0];
+  if (!file || !path) return;
 
-  const handleImageUpload = async (e, path) => {
-    const file = e.target.files[0];
-    if (!file || !path) return;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+  try {
+    const res = await axios.post(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      formData,
+      {
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
+        },
+      }
+    );
 
-    try {
-      const res = await axios.post(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        formData,
-        {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          }
-        }
-      );
+    setProductData(prev => {
+      const keys = path.replace(/\[(\d+)\]/g, '.$1').split('.'); // ✅ fix
+      const updated = JSON.parse(JSON.stringify(prev));
+      let current = updated;
 
-      setProductData(prev => {
-        const keys = path.split('.');
-        const updated = JSON.parse(JSON.stringify(prev));
-        let current = updated;
-        
-        for (let i = 0; i < keys.length - 1; i++) {
-          if (!current[keys[i]]) current[keys[i]] = {};
-          current = current[keys[i]];
-        }
-        
-        current[keys[keys.length - 1]] = res.data.secure_url;
-        return updated;
-      });
-    } catch (err) {
-      console.error('Upload failed:', err);
-      alert('Image upload failed. Please try again.');
-    } finally {
-      setUploadProgress(0);
-    }
-  };
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) current[keys[i]] = {};
+        current = current[keys[i]];
+      }
+
+      current[keys[keys.length - 1]] = res.data.secure_url;
+      return updated;
+    });
+  } catch (err) {
+    console.error('Upload failed:', err);
+    alert('Image upload failed. Please try again.');
+  } finally {
+    setUploadProgress(0);
+  }
+};
+
 
   const handleSubmit = async (e) => {
   e.preventDefault();
@@ -391,17 +391,17 @@ const addVariant = () => {
             <h3 className="font-semibold">Variants</h3>
             {productData.variants.map((variant, index) => (
               <div key={index} className="border p-4 rounded-lg space-y-4">
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">Variant ID*</label>
-        <input 
-          name={`variants[${index}].variant_id`}
-          value={variant.variant_id}
-          onChange={handleChange} 
-          className="w-full border p-2 rounded" 
-          required 
-        />
-      </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Variant ID*</label>
+                    <input 
+                      name={`variants[${index}].variant_id`}
+                      value={variant.variant_id}
+                      onChange={handleChange} 
+                      className="w-full border p-2 rounded" 
+                      required 
+                    />
+                  </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Color</label>
                     <select 
@@ -415,7 +415,7 @@ const addVariant = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Size</label>
+                    <label className="block text-sm font-medium mb-1">{productData.type === 'clothing' ? 'Size' : 'Size in inches'}</label>
                     <select 
                       name={`variants[${index}].size`}
                       value={variant.size}
@@ -426,6 +426,18 @@ const addVariant = () => {
                       {getSizeOptions().map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
+                  {productData.type === 'electronics' && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Storage</label>
+                      <input 
+                        type="text"
+                        name={`variants[${index}].storage`}
+                        value={variant.storage}
+                        onChange={handleChange} 
+                        className="w-full border p-2 rounded" 
+                      />
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium mb-1">Stock</label>
                     <input 
@@ -438,33 +450,25 @@ const addVariant = () => {
                     />
                   </div>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">Variant Image</label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={(e) => handleImageUpload(e, `variants[${index}].image`)} 
-                    className="w-full border p-2 rounded" 
-                  />
-                  {uploadProgress > 0 && uploadProgress < 100 && (
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                      <div 
-                        className="bg-blue-600 h-2.5 rounded-full" 
-                        style={{ width: `${uploadProgress}%` }}
-                      ></div>
-                    </div>
-                  )}
-                  {variant.image && (
-                    <div className="mt-2">
-                      <img 
-                        src={variant.image} 
-                        alt="Variant preview" 
-                        className="h-20 w-20 object-cover rounded border" 
-                      />
-                    </div>
-                  )}
-                </div>
+                {/* Variant Image Upload */}
+    <div className="mb-4">
+      <label className="block text-sm font-medium mb-1">Variant Image</label>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleImageUpload(e, `variants[${index}].image`)}
+        className="w-full border p-2 rounded"
+      />
+      {variant.image && (
+        <img
+          src={variant.image}
+          alt="Variant Preview"
+          className="mt-2 w-32 h-32 object-cover rounded"
+        />
+      )}
+    </div>
+            
+               
                 
                 {index > 0 && (
                   <button

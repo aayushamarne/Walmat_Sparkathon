@@ -88,13 +88,13 @@ const Navbar = () => {
                       {activeCategory}
                     </h4>
                     {dropdownData[activeCategory].map((subItem) => (
-                      <Link
-                        key={subItem}
-                        href="pages/clothing/all-clothing/"
-                        className="block px-3 py-1 rounded hover:bg-gray-100 transition"
-                      >
-                        {subItem}
-                      </Link>
+                     <div
+      key={subItem}
+      onClick={() => router.push('/pages/clothing/all-clothing/')}
+      className="block px-3 py-1 rounded hover:bg-gray-100 transition cursor-pointer"
+    >
+      {subItem}
+    </div>
 
                     ))}
                   </div>
