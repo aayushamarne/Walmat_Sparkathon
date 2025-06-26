@@ -43,7 +43,7 @@ const Register = () => {
     await register(form);
     if (form.role === "seller") {
       alert("Account Created Successfully");
-    router.push("/sellerDashboard");
+    router.push("/pages/SellerDashboard");
   } else {
     alert("Account Created! Check you Account details.")
     router.push("/");

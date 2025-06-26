@@ -42,7 +42,7 @@ const Login = () => {
       // Role-based routing
       if (user.role === "seller") {
         alert("Login Successful");
-        router.push("/sellerDashboard");
+        router.push("pages/SellerDashboard");
       } else {
         alert("Login Successful. Check Your Account Details.");
         router.push("/");
