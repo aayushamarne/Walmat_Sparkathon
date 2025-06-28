@@ -4,7 +4,7 @@ const cors = require('cors');
 
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes'); // ✅ new import
-
+const checkoutRoutes = require('./routes/checkout');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -21,6 +21,7 @@ mongoose.connect(
   .catch((err) => console.log("❌ MongoDB error:", err));
 
 // ✅ Routes
+app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/', productRoutes); // ✅ use product routes
 

@@ -153,6 +153,16 @@ const Account = () => {
                   placeholder="Your email address"
                 />
               </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Address</label>
+                <input
+                  name="address"
+                  value={form.address || ""}
+                  onChange={handleChange}
+                  className="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Your delivery address"
+                />
+              </div>
             </div>
           </section>
 
@@ -190,7 +200,7 @@ const Account = () => {
             </div>
           </section>
 
-          {/* Action Buttons */}
+          {/* Save Button */}
           <div className="pt-6">
             <button
               onClick={handleUpdate}

@@ -2,10 +2,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const { user } = useAuth();
-
+const router=useRouter();
   return (
     <header className="bg-blue-600 text-white w-full">
       <div className="max-w-7xl mx-auto px-4 py-2">
@@ -57,13 +58,18 @@ const Header = () => {
                 </Link>
               )}
             </div>
-            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors">
+            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors"
+                    
+            onClick={() => router.push('/reorder')}
+            >
               <span className="material-symbols-outlined">favorite</span>
               <span className="hidden lg:block">Reorder</span>
             </button>
-            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors relative">
+            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors relative" 
+            
+            onClick={() => router.push('/pages/addtoCart')}
+>
               <span className="material-symbols-outlined">shopping_cart</span>
-              <span className="absolute -top-2 -right-2 bg-yellow-500 text-gray-800 rounded-full w-5 h-5 text-xs flex items-center justify-center">0</span>
             </button>
           </div>
         </div>

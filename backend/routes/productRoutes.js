@@ -76,11 +76,32 @@ router.get('/products', async (req, res) => {
   }
 });
 
+router.post('/api/products/rate/:productId', async (req, res) => {
+  const { productId } = req.params;
+  const { rating, review } = req.body;
+
+  try {
+    const product = await Product.findById(productId);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    product.reviews.push({ rating, review });
+    product.rating.count += 1;
+    product.rating.average =
+      (product.rating.average * (product.rating.count - 1) + rating) /
+      product.rating.count;
+
+    await product.save();
+    res.json({ success: true, message: "Review added successfully" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 router.get('/products/:productId', async (req, res) => {
   try {
     const product = await Product.findOne({ product_id: req.params.productId });
+
 
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
@@ -89,6 +110,18 @@ router.get('/products/:productId', async (req, res) => {
     res.json(product);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+});
+router.get('/products/:productId/reviews', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.productId);
+    if (!product) {
+      return res.status(404).json({ success: false, error: "Product not found" });
+    }
+
+    res.json({ success: true, reviews: product.rating?.reviews || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

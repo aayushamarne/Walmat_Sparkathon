@@ -37,7 +37,10 @@ const INITIAL_PRODUCT_DATA = {
     warranty: '', 
     connectivity: []
   },
-  images: { main: '', gallery: [] }
+  images: { main: '', gallery: [] },
+    // ✅ NEW: Ratings
+  ratings: [],  // Each element: { user_id, rating, review, created_at }
+  average_rating: 0
 };
 
 const CATEGORIES = ['Shirts', 'Jeans', 'Mobiles', 'Laptops'];

@@ -58,5 +58,43 @@ router.put('/:user_id', async (req, res) => {
   }
 });
 
+// GET current address using user_id
+router.get("/address/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const user = await User.findOne({ user_id });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, address: user.address || "" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST updated address using user_id
+router.post("/address/:user_id", async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { address } = req.body;
+
+    const user = await User.findOneAndUpdate(
+      { user_id },
+      { address },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, address: user.address });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 
 module.exports = router;
