@@ -3,10 +3,12 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { useCart } from '@/context/CartContext';
 
 const Header = () => {
   const { user } = useAuth();
 const router=useRouter();
+const { cartCount } = useCart();
   return (
     <header className="bg-blue-600 text-white w-full">
       <div className="max-w-7xl mx-auto px-4 py-2">
@@ -58,18 +60,23 @@ const router=useRouter();
                 </Link>
               )}
             </div>
-            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors"
+            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors cursor-pointer"
                     
             onClick={() => router.push('/reorder')}
             >
               <span className="material-symbols-outlined">favorite</span>
               <span className="hidden lg:block">Reorder</span>
             </button>
-            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors relative" 
+            <button className="flex items-center space-x-1 hover:text-yellow-400 transition-colors relative cursor-pointer" 
             
             onClick={() => router.push('/pages/addtoCart')}
 >
               <span className="material-symbols-outlined">shopping_cart</span>
+              {(
+          <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {cartCount}
+          </span>
+        )}
             </button>
           </div>
         </div>

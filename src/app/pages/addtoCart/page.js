@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { useAuth } from "../../../../hooks/useAuth";
+import { useCart } from '@/context/CartContext'; 
 
 const stripePromise = loadStripe("pk_test_51OzZKjSGbk9Yd6N1HOmsT28mkka0oVK6bO3upmeOtPQ2tIkuBGVaTdyfU1jlsYwaiDnK7BMGEfBCNfMPz1BPzXAE00tT3l0rAr");
 export default function CartPage() {
@@ -15,6 +16,7 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [address, setAddress] = useState("");
+  const { updateCartCount } = useCart();
   const [editingAddress, setEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState("");
 
@@ -75,6 +77,7 @@ export default function CartPage() {
         productId, type, variant_id, quantity
       })))
     );
+    updateCartCount();
   };
 
   // ✅ Toggle selected items
@@ -119,7 +122,7 @@ export default function CartPage() {
           productId, type, variant_id, quantity
         }))
       ));
-
+      updateCartCount();
       localStorage.removeItem("paidItems");
     }
   }, [searchParams]);

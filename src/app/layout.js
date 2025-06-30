@@ -3,6 +3,7 @@ import "./globals.css";
 import Head from "next/head";
 
 import { AuthProvider } from "../../hooks/useAuth";
+import { CartProvider } from "@/context/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,10 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
          <AuthProvider>
-        {children}
+          <CartProvider>
+          {children}
+          </CartProvider>
+      
         </AuthProvider>
       </body>
     </html>
