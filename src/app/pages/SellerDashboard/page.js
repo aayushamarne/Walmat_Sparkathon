@@ -1,8 +1,8 @@
 "use client";
 import React,{useCallback} from "react";
-import Header from "@/app/components/Header";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import Header from "../../components/Header";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import { useProduct } from "../../../../hooks/useProduct";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
