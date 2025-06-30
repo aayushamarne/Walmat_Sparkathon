@@ -9,6 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+// WO97ZuLImm4WHIwa
 // ✅ MongoDB connection
 mongoose.connect(
   'mongodb+srv://jadhavsanyog400:WO97ZuLImm4WHIwa@cluster0.fulpgez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
@@ -23,7 +25,12 @@ mongoose.connect(
 //  Routes
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
+
 app.use('/api', productRoutes); // ✅ use product routes
+=======
+app.use('/api/', productRoutes); 
+
+
 
 // ✅ Server start
 app.listen(5000, () => {
