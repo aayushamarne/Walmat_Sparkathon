@@ -3,7 +3,9 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '../../context/CartContext';
+
+
 
 const Header = () => {
   const { user } = useAuth();
