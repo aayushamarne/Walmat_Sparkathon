@@ -47,7 +47,7 @@ const Featured = () => {
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold">Featured Products</h2>
           <a
-            href="#"
+            href="/pages/allProducts"
             className="text-blue-600 hover:text-blue-800 font-semibold"
           >
             View All →

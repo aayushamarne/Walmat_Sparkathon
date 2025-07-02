@@ -1,9 +1,9 @@
 import React from 'react'
-import HeroBanner from '@/app/components/HeroBanner';
-import Categories from '@/app/components/Categories';
-import Featured from '@/app/components/Featured';
-import Deals from '@/app/components/Deals';
-import Perks from '@/app/components/Perks';
+import HeroBanner from '../../components/HeroBanner';
+import Categories from '../../components/Categories';
+import Featured from '../../components/Featured';
+import Deals from '../../components/Deals';
+import Perks from '../../components/Perks';
 const HomePage = () => {
   return (
     <div>

@@ -1,8 +1,8 @@
 "use client";
 import React,{useCallback} from "react";
-import Header from "@/app/components/Header";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
+import Header from "../../components/Header";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 import { useProduct } from "../../../../hooks/useProduct";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -137,12 +137,7 @@ const handleDelete = async (productId) => {
         ) : (
           <div className="text-center py-10 bg-white rounded-lg shadow">
             <p className="text-gray-500">No products found</p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="mt-4 bg-purple-600 text-white py-2 px-6 rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              Add Your First Product
-            </button>
+           
           </div>
         )}
       </div>

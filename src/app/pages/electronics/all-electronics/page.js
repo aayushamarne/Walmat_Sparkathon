@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from '../../../../context/CartContext';
 
+
 import axios from "axios";
 
 const AllClothing = () => {
@@ -40,7 +41,7 @@ const [validationMessage, setValidationMessage] = useState("");
     const fetchClothing = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/products?type=clothing");
+        const res = await axios.get("http://localhost:5000/api/products?type=electronics");
         let products = [];
     
         if (Array.isArray(res.data)) {
@@ -343,6 +344,8 @@ setClothingProducts(prev =>
     ))}
   </div>
 </div>
+
+
 
             {/* Quantity and Add to Cart */}
             <div className="mt-4 flex items-center gap-3">

@@ -138,5 +138,38 @@ router.delete('/products/:productId', async (req, res) => {
   }
 });
 
+// Update Variant + Price
+router.put('/products/:productId/variant/:variantId', async (req, res) => {
+  const { productId, variantId } = req.params;
+  const { color, size, stock } = req.body;
+  const { original, discounted } = req.body.price || {};
+
+  try {
+    const product = await Product.findOne({ product_id: productId });
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    // Find and update variant
+    const variant = product.variants.find(v => v.variant_id === variantId);
+    if (!variant) return res.status(404).json({ success: false, message: "Variant not found" });
+
+    if (color !== undefined) variant.color = color;
+    if (size !== undefined) variant.size = size;
+    if (stock !== undefined) variant.stock = stock;
+
+    // Update price if provided
+    if (original !== undefined || discounted !== undefined) {
+      if (!product.price) product.price = {};
+      if (original !== undefined) product.price.original = original;
+      if (discounted !== undefined) product.price.discounted = discounted;
+    }
+
+    await product.save();
+    res.json({ success: true, message: "Variant and price updated successfully", product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+
 
 module.exports = router;

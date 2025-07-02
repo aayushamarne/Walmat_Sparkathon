@@ -1,10 +1,13 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
+<<<<<<< HEAD
 import VoiceAssistant from "./components/VoiceAssistant";
 
+=======
+>>>>>>> eb40e27dd8a77ad8db3a3eb0392dfb16be38d519
 import { AuthProvider } from "../../hooks/useAuth";
-import { CartProvider } from "@/context/CartContext";
+import { CartProvider } from "../context/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
