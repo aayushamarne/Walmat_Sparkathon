@@ -8,7 +8,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // ✅ Restore user from localStorage on initial load
+  //  Restore user from localStorage on initial load
   useEffect(() => {
     const storedUser = localStorage.getItem("loggedUser");
     if (storedUser) {
