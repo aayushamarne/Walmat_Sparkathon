@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Navbar from "../../../components/Navbar";
-import Header from "../../../components/Header";
+import Navbar from "../../components/Navbar";
+import Header from "../../components/Header";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-const AllClothing = () => {
+const AllProducts = () => {
   const [clothingProducts, setClothingProducts] = useState([]);
   const [expandedCard, setExpandedCard] = useState(null);
   const [selectedColor, setSelectedColor] = useState("");
@@ -26,7 +26,7 @@ const AllClothing = () => {
     const fetchClothing = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/products?type=clothing");
+        const res = await axios.get("http://localhost:5000/api/products");
         let products = [];
 
         if (Array.isArray(res.data)) {
@@ -126,8 +126,8 @@ const AllClothing = () => {
       <Header />
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold mb-4">All Clothing</h1>
-        <p className="mb-8">Browse our full range of clothing items for everyone.</p>
+        <h1 className="text-3xl font-bold mb-4">All Products</h1>
+        <p className="mb-8">Browse our full range of Items.</p>
 
         {loading && <p>Loading products...</p>}
         {error && (
@@ -338,4 +338,4 @@ const AllClothing = () => {
   );
 };
 
-export default AllClothing;
+export default AllProducts;

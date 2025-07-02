@@ -1,13 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation"; // ✅ Correct for App Router
+import { useParams } from "next/navigation";
 import axios from "axios";
 
 const ProductDetails = () => {
-  const { productId } = useParams(); // from URL
+  const { productId } = useParams();
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [loading, setLoading] = useState(true);
+  const isSeller = true; // Set based on actual auth/session logic
 
   useEffect(() => {
     if (productId) {
@@ -24,10 +25,33 @@ const ProductDetails = () => {
     }
   }, [productId]);
 
-  const handleAddToCart = () => {
-    // Replace with real cart logic
-    console.log("Added to cart:", selectedVariant);
-    alert(`Added variant ${selectedVariant.variant_id} to cart`);
+  const handleVariantChange = (field, value) => {
+    setSelectedVariant({ ...selectedVariant, [field]: value });
+  };
+
+  const handlePriceChange = (field, value) => {
+    setProduct({
+      ...product,
+      price: {
+        ...product.price,
+        [field]: Number(value),
+      },
+    });
+  };
+
+  const handleSaveChanges = () => {
+    const payload = {
+      ...selectedVariant,
+      price: product.price,
+    };
+
+    axios
+      .put(
+        `http://localhost:5000/api/products/${productId}/variant/${selectedVariant.variant_id}`,
+        payload
+      )
+      .then(() => alert("Changes saved!"))
+      .catch((err) => console.error("Failed to save changes", err));
   };
 
   if (loading) {
@@ -68,8 +92,10 @@ const ProductDetails = () => {
               />
             </div>
             <p><strong>Color:</strong> {variant.color}</p>
-            <p><strong>Size:</strong> {variant.size}<p> inches</p></p>
-            {variant.storage && <p><strong>Storage:</strong> {variant.storage}</p>}
+            <p>
+              <strong>Size:</strong> {variant.size}
+              <span> </span>
+            </p>
             <p><strong>Stock:</strong> {variant.stock}</p>
           </div>
         ))}
@@ -78,24 +104,86 @@ const ProductDetails = () => {
       {selectedVariant && (
         <div className="mt-8 border-t pt-6">
           <h2 className="text-2xl font-semibold mb-2">Selected Variant</h2>
-          <p><strong>Color:</strong> {selectedVariant.color}</p>
-          <p><strong>Size:</strong> {selectedVariant.size}</p>
-          <p><strong>Storage:</strong> {selectedVariant.storage || "N/A"}</p>
-          <p className="text-xl mt-2 text-green-600">
-            ₹{product.price?.discounted || product.price?.original}
-          </p>
-          {product.price?.discounted &&
-            product.price.discounted < product.price.original && (
-              <p className="line-through text-sm text-gray-500">
-                ₹{product.price.original}
+
+          {isSeller ? (
+            <div className="space-y-3">
+              <label className="block">
+                Color:
+                <input
+                  className="border rounded w-full p-2"
+                  value={selectedVariant.color}
+                  onChange={(e) => handleVariantChange("color", e.target.value)}
+                />
+              </label>
+              <label className="block">
+                Size :
+                <input
+                  type="text"
+                  className="border rounded w-full p-2"
+                  value={selectedVariant.size}
+                  onChange={(e) => handleVariantChange("size", e.target.value)}
+                />
+              </label>
+              <label className="block">
+                Stock:
+                <input
+                  type="number"
+                  className="border rounded w-full p-2"
+                  value={selectedVariant.stock}
+                  onChange={(e) => handleVariantChange("stock", e.target.value)}
+                />
+              </label>
+
+              <label className="block">
+                Original Price (₹):
+                <input
+                  type="number"
+                  className="border rounded w-full p-2"
+                  value={product.price?.original || ""}
+                  onChange={(e) => handlePriceChange("original", e.target.value)}
+                />
+              </label>
+              <label className="block">
+                Discounted Price (₹):
+                <input
+                  type="number"
+                  className="border rounded w-full p-2"
+                  value={product.price?.discounted || ""}
+                  onChange={(e) => handlePriceChange("discounted", e.target.value)}
+                />
+              </label>
+
+              <button
+                onClick={handleSaveChanges}
+                className="mt-4 bg-green-600 text-white py-2 px-6 rounded hover:bg-green-700"
+              >
+                Save Changes
+              </button>
+            </div>
+          ) : (
+            <div>
+              <p><strong>Color:</strong> {selectedVariant.color}</p>
+              <p><strong>Size:</strong> {selectedVariant.size}</p>
+              <p><strong>Stock:</strong> {selectedVariant.stock}</p>
+              <p className="text-xl mt-2 text-green-600">
+                ₹{product.price?.discounted || product.price?.original}
               </p>
+              {product.price?.discounted &&
+                product.price.discounted < product.price.original && (
+                  <p className="line-through text-sm text-gray-500">
+                    ₹{product.price.original}
+                  </p>
+              )}
+              <button
+                onClick={() =>
+                  alert(`Added variant ${selectedVariant.variant_id} to cart`)
+                }
+                className="mt-4 bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700"
+              >
+                Add to Cart
+              </button>
+            </div>
           )}
-          <button
-            onClick={handleAddToCart}
-            className="mt-4 bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700"
-          >
-            Add to Cart
-          </button>
         </div>
       )}
     </div>
