@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -14,7 +14,7 @@ const Register = () => {
     name: "",
     email: "",
     password_hash: "",
-    address:"",
+    address: "",
     phone: "",
     role: "customer",
     avatar_url: "",
@@ -36,21 +36,76 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault(); 
+
     await register(form);
     if (form.role === "seller") {
       alert("Account Created Successfully");
-    router.push("/pages/SellerDashboard");
-  } else {
-    alert("Account Created! Check you Account details.")
-    router.push("/");
-  }
-
+      router.push("/pages/SellerDashboard");
+    } else {
+      alert("Account Created! Check your account details.");
+      router.push("/");
+    }
   };
+
+  //  Listen for voice input
+  useEffect(() => {
+    const handleVoiceRegister = (event) => {
+      let {
+        email,
+        password,
+        phone,
+        storeName,
+        fullName,
+        role, 
+        submit,
+      } = event.detail;
+      console.log("Voice register event received:", event.detail);
+      const fullNameLower = fullName?.toLowerCase() || "";
+
+      if (!storeName && fullNameLower.includes("store")) {
+        storeName = fullName;
+        fullName = undefined;
+        isStore = true;
+      }
+  
+      if (storeName && !role) {
+        role = "seller";
+      }
+    
+
+      setForm((prev) => ({
+        ...prev,
+        email: email || prev.email,
+        password_hash: password || prev.password_hash,
+        phone: phone || prev.phone,
+        store_name: storeName || prev.store_name,
+        name: fullName || prev.name,
+        role: role || prev.role, 
+      }));
+      if (submit) {
+        document.querySelector("form")?.requestSubmit(); 
+      }
+    };
+  
+    const handleVoiceRegisterSubmit = () => {
+      document.querySelector("form")?.requestSubmit();
+    };
+  
+    window.addEventListener("voiceRegister", handleVoiceRegister);
+    window.addEventListener("voiceRegisterSubmit", handleVoiceRegisterSubmit);
+  
+    return () => {
+      window.removeEventListener("voiceRegister", handleVoiceRegister);
+      window.removeEventListener("voiceRegisterSubmit", handleVoiceRegisterSubmit);
+    };
+  }, [form]); // This dependency is fine
   
 
   return (
@@ -90,6 +145,7 @@ const Register = () => {
               <FaUser className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 name="name"
+                value={form.name}
                 placeholder="Full Name"
                 className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
                 onChange={handleChange}
@@ -105,6 +161,7 @@ const Register = () => {
               <FaEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 name="email"
+                value={form.email}
                 type="email"
                 placeholder="Email"
                 className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
@@ -122,6 +179,7 @@ const Register = () => {
               <input
                 name="password_hash"
                 type="password"
+                value={form.password_hash}
                 placeholder="Password"
                 className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
                 onChange={handleChange}
@@ -137,6 +195,7 @@ const Register = () => {
               <FaPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 name="phone"
+                value={form.phone}
                 placeholder="Phone Number"
                 className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
                 onChange={handleChange}
@@ -152,7 +211,9 @@ const Register = () => {
               <div className="relative">
                 <FaStore className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
+                  type="text"
                   name="store_name"
+                  value={form.store_name}
                   placeholder="Your Store Name"
                   className="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-violet-400"
                   onChange={handleChange}
@@ -165,7 +226,7 @@ const Register = () => {
           {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-violet-600 text-white py-2 rounded-full hover:bg-violet-700 transition font-semibold"
+            className="w-full bg-violet-600 text-white py-2 rounded-full hover:bg-violet-700 transition font-semibold cursor-pointer"
           >
             Register
           </button>
