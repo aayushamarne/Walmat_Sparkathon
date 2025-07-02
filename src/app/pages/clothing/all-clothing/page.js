@@ -344,8 +344,6 @@ setClothingProducts(prev =>
   </div>
 </div>
 
-
-
             {/* Quantity and Add to Cart */}
             <div className="mt-4 flex items-center gap-3">
               <label htmlFor="quantity" className="font-semibold">Quantity:</label>
