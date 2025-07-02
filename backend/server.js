@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const userRoutes = require('./routes/userRoutes');
-const productRoutes = require('./routes/productRoutes'); // ✅ new import
+const productRoutes = require('./routes/productRoutes'); 
 const checkoutRoutes = require('./routes/checkout');
 const app = express();
 app.use(cors());
@@ -22,10 +22,14 @@ mongoose.connect(
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB error:", err));
 
-// ✅ Routes
+//  Routes
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
+
+app.use('/api', productRoutes); // ✅ use product routes
+=======
 app.use('/api/', productRoutes); 
+
 
 
 // ✅ Server start
