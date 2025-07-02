@@ -3,11 +3,12 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useCart } from '@/context/CartContext';
+import { useCart } from '../../context/CartContext';
 
 const Header = () => {
   const { user } = useAuth();
 const router=useRouter();
+
 const { cartCount } = useCart();
   return (
     <header className="bg-blue-600 text-white w-full">
@@ -26,7 +27,7 @@ const { cartCount } = useCart();
               <span className="material-symbols-outlined text-yellow-400">location_on</span>
               <div className="flex flex-col leading-tight text-sm whitespace-nowrap overflow-hidden">
                 <span className="font-semibold">Pickup or delivery?</span>
-                <span className="text-white text-xs truncate">Mumbai, 400001 • Walmart Local Store</span>
+                <span className="text-white text-xs truncate"></span>
               </div>
               <span className="material-symbols-outlined ml-auto">expand_more</span>
             </div>

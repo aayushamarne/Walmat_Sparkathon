@@ -4,7 +4,7 @@ import Navbar from "../../../components/Navbar";
 import Header from "../../../components/Header";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCart } from '@/context/CartContext';
+import { useCart } from '../../../../context/CartContext';
 
 import axios from "axios";
 
