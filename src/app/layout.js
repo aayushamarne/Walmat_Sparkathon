@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
+import VoiceAssistant from "./components/VoiceAssistant";
 
 import { AuthProvider } from "../../hooks/useAuth";
 import { CartProvider } from "@/context/CartContext";
@@ -37,8 +38,8 @@ export default function RootLayout({ children }) {
          <AuthProvider>
           <CartProvider>
           {children}
+          <VoiceAssistant />
           </CartProvider>
-      
         </AuthProvider>
       </body>
     </html>

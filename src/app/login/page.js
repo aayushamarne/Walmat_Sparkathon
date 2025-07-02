@@ -14,15 +14,27 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   // Load stored credentials on mount
+  // Voice Assistant: Fill email/password from speech
   useEffect(() => {
-    const storedEmail = localStorage.getItem("rememberEmail");
-    const storedPassword = localStorage.getItem("rememberPassword");
-    if (storedEmail && storedPassword) {
-      setEmail(storedEmail);
-      setPassword(storedPassword);
-      setRememberMe(true);
-    }
+    const handlePartialLogin = (e) => {
+      const { email: spokenEmail, password: spokenPassword } = e.detail || {};
+      if (spokenEmail) setEmail(spokenEmail);
+      if (spokenPassword) setPassword(spokenPassword);
+    };
+
+    const handleLoginSubmit = () => {
+      document.querySelector("form")?.requestSubmit(); // Triggers native form submit
+    };
+
+    window.addEventListener("voicePartialLogin", handlePartialLogin);
+    window.addEventListener("voiceLoginSubmit", handleLoginSubmit);
+
+    return () => {
+      window.removeEventListener("voicePartialLogin", handlePartialLogin);
+      window.removeEventListener("voiceLoginSubmit", handleLoginSubmit);
+    };
   }, []);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
