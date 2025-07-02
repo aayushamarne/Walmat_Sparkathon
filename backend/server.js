@@ -27,7 +27,7 @@ app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
 
 app.use('/api', productRoutes); // ✅ use product routes
-=======
+
 app.use('/api/', productRoutes); 
 
 

@@ -41,7 +41,7 @@ const [validationMessage, setValidationMessage] = useState("");
     const fetchClothing = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/products?type=clothing");
+        const res = await axios.get("http://localhost:5000/api/products?type=electronics");
         let products = [];
     
         if (Array.isArray(res.data)) {
