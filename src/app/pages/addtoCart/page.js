@@ -20,6 +20,7 @@ export default function CartPage() {
   const [editingAddress, setEditingAddress] = useState(false);
   const [newAddress, setNewAddress] = useState("");
 
+
   // ✅ Load Cart and Address
   useEffect(() => {
     if (!user?.user_id) return;
@@ -66,6 +67,48 @@ export default function CartPage() {
     fetchAddress();
   }, [user?.user_id]);
 
+useEffect(() => {
+    const handleVoiceSelect = (e) => {
+      const { itemId } = e.detail;
+      if (itemId >= 0 && itemId < cartItems.length) {
+        const variantId = cartItems[itemId].variant_id;
+        toggleSelect(variantId);
+      }
+    };
+
+    const handleVoiceDeselect = (e) => {
+      const { itemId } = e.detail;
+      if (itemId >= 0 && itemId < cartItems.length) {
+        const variantId = cartItems[itemId].variant_id;
+        toggleDeselect(variantId); // Now defined below
+      }
+    };
+
+    window.addEventListener("voiceSelectItem", handleVoiceSelect);
+    window.addEventListener("voiceDeselectItem", handleVoiceDeselect);
+
+    return () => {
+      window.removeEventListener("voiceSelectItem", handleVoiceSelect);
+      window.removeEventListener("voiceDeselectItem", handleVoiceDeselect);
+    };
+  }, [cartItems, selectedItems]);
+
+  useEffect(() => {
+    const handleVoicePayment = (e) => {
+      const { items } = e.detail;
+      if (items?.length) {
+        setSelectedItems(items); // Optional: Sync selected items if needed
+        handlePayment(); // Trigger payment
+      }
+    };
+
+    window.addEventListener("voiceProceedToPayment", handleVoicePayment);
+
+    return () => {
+      window.removeEventListener("voiceProceedToPayment", handleVoicePayment);
+    };
+  }, [selectedItems]);
+
   // ✅ Remove item from cart
   const handleRemove = (index) => {
     const updated = [...cartItems];
@@ -88,6 +131,9 @@ export default function CartPage() {
       const selectedItem = cartItems.find((item) => item.variant_id === variant_id);
       if (selectedItem) setSelectedItems([...selectedItems, selectedItem]);
     }
+  };
+  const toggleDeselect = (variant_id) => {
+    setSelectedItems(selectedItems.filter((item) => item.variant_id !== variant_id));
   };
 
   // ✅ Handle Stripe Checkout
