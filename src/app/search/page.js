@@ -99,6 +99,112 @@ const SearchResultsPage = () => {
     fetchResults();
   }, [query]);
 
+  // Add event listeners for voice commands
+  useEffect(() => {
+    const handleOpenProduct = (event) => {
+      const { productTitle } = event.detail;
+      const product = results.find((p) =>
+        p.name.toLowerCase().includes(productTitle.toLowerCase())
+      );
+      if (product) {
+        setExpandedCard(product._id);
+        setSelectedColor("");
+        setSelectedSize("");
+        setQuantity(1);
+        setDisplayImage(product.images?.main || "/placeholder.svg");
+      } else {
+        window.speechSynthesis.speak(
+          new SpeechSynthesisUtterance(`Product ${productTitle} not found`)
+        );
+      }
+    };
+
+    const handleSelectColor = (event) => {
+      const { color } = event.detail;
+      if (expandedCard) {
+        const product = results.find((p) => p._id === expandedCard);
+        const availableColors = [...new Set(product?.variants?.map((v) => v.color))];
+        if (availableColors.includes(color)) {
+          setSelectedColor(color);
+          setSelectedSize("");
+          const variantWithColor = product?.variants?.find((v) => v.color === color);
+          setDisplayImage(variantWithColor?.image || product?.images?.main || "/placeholder.svg");
+        } else {
+          window.speechSynthesis.speak(
+            new SpeechSynthesisUtterance(`Color ${color} not available`)
+          );
+        }
+      }
+    };
+
+    const handleSelectSize = (event) => {
+      const { size } = event.detail;
+      if (expandedCard) {
+        const product = results.find((p) => p._id === expandedCard);
+        const availableSizes = product?.variants
+          ?.filter((v) => v.color === selectedColor)
+          .map((v) => v.size);
+        if (availableSizes.includes(size)) {
+          setSelectedSize(size);
+        } else {
+          window.speechSynthesis.speak(
+            new SpeechSynthesisUtterance(`Size ${size} not available`)
+          );
+        }
+      }
+    };
+
+    const handleVoiceAddToCart = () => {
+      if (expandedCard) {
+        const product = results.find((p) => p._id === expandedCard);
+        const selectedVariant = product?.variants?.find(
+          (v) => v.color === selectedColor && v.size === selectedSize
+        );
+        if (!selectedVariant?.variant_id) {
+          window.speechSynthesis.speak(
+            new SpeechSynthesisUtterance("Please select both a valid color and size")
+          );
+          return;
+        }
+        handleAddToCart(product, selectedVariant);
+      }
+    };
+
+    const handleSearchReviews = () => {
+      if (expandedCard) {
+        setActiveProduct(expandedCard);
+        setSearchTerm("");
+        axios
+          .get(`http://localhost:5000/api/products/${expandedCard}/reviews`)
+          .then((res) => {
+            setAllReviews(res.data.reviews || []);
+            setSearchReviewModalOpen(true);
+          })
+          .catch((err) => {
+            console.error("Error fetching reviews for search:", err);
+            setAllReviews([]);
+            window.speechSynthesis.speak(
+              new SpeechSynthesisUtterance("Failed to load reviews")
+            );
+          });
+      }
+    };
+
+    window.addEventListener("voiceOpenProduct", handleOpenProduct);
+    window.addEventListener("voiceSelectColor", handleSelectColor);
+    window.addEventListener("voiceSelectSize", handleSelectSize);
+    window.addEventListener("voiceAddToCart", handleVoiceAddToCart);
+    window.addEventListener("voiceSearchReviews", handleSearchReviews);
+
+    return () => {
+      window.removeEventListener("voiceOpenProduct", handleOpenProduct);
+      window.removeEventListener("voiceSelectColor", handleSelectColor);
+      window.removeEventListener("voiceSelectSize", handleSelectSize);
+      window.removeEventListener("voiceAddToCart", handleVoiceAddToCart);
+      window.removeEventListener("voiceSearchReviews", handleSearchReviews);
+    };
+  }, [results, expandedCard, selectedColor, selectedSize]);
+
   const handleAddToCart = (product, variant) => {
     if (!variant?.variant_id) {
       setValidationMessage("Please select both a valid color and size before adding to cart.");
@@ -192,7 +298,7 @@ const SearchResultsPage = () => {
             : p
         )
       );
-      setViewReviewModalOpen(true);
+      setViewReviewModalOpen(true); // Fixed typo here
     } catch (err) {
       alert("Failed to load reviews: " + (err.response?.data?.error || "Unknown error"));
     }
@@ -277,7 +383,7 @@ const SearchResultsPage = () => {
                     className="w-full h-80 object-cover rounded"
                   />
                   <div>
-                    <h3 className="text-巢xl font-bold">{product.name}</h3>
+                    <h3 className="text-xl font-bold">{product.name}</h3>
                     <p className="text-gray-600">{product.brand}</p>
                     <p className="text-blue-600 text-lg font-semibold mt-1">
                       ₹{product.price?.discounted || product.price?.original}
