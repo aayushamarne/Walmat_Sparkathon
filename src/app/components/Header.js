@@ -40,7 +40,7 @@ const { cartCount } = useCart();
                 <span className="font-semibold">Pickup or delivery?</span>
                 <span className="text-white text-xs truncate"></span>
               </div>
-              <span className="material-symbols-outlined ml-auto">expand_more</span>
+              
             </div>
           </div>
 
