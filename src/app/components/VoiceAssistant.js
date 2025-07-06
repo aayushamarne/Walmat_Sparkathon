@@ -4,6 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { processCommand } from "../../utils/intentParser";
 import { parseLoginIntent } from "../../utils/loginIntentParser";
 import { parseRegisterIntent } from "../../utils/registerIntentParser";
+import { parseAccountIntent } from "../../utils/accountIntentParser";
 import { BotIcon, BotOffIcon } from "lucide-react";
 
 const VoiceAssistant = () => {
@@ -13,6 +14,8 @@ const VoiceAssistant = () => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
   const isListeningRef = useRef(false);
+  const roleRef = useRef(""); 
+
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -24,6 +27,14 @@ const VoiceAssistant = () => {
       console.warn("SpeechRecognition not supported.");
       return;
     }
+    window.addEventListener("userRoleChanged", (e) => {
+      const newRole = e.detail?.role;
+      if (newRole) {
+        roleRef.current = newRole;
+        console.log("📣 Role received from register page:", newRole);
+      }
+    });
+    
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
@@ -38,6 +49,7 @@ const VoiceAssistant = () => {
       "stop listening",
       "exit",
       "close assistant",
+      "close"
     ];
 
     recognition.onresult = async (event) => {
@@ -98,7 +110,7 @@ const VoiceAssistant = () => {
 
       
      // Register
-const registerIntent = parseRegisterIntent(transcript);
+     const registerIntent = parseRegisterIntent(transcript, roleRef.current);
 if (registerIntent.action === "register_intent" && pathname === "/register") {
   const {
     email,
@@ -121,7 +133,7 @@ if (registerIntent.action === "register_intent" && pathname === "/register") {
           phone,
           fullName,
           storeName,
-          role: userType, 
+          userType, 
         },
       })
     );
@@ -148,10 +160,108 @@ if ((userType === "seller" && alreadySeller) || (userType === "customer" && alre
   };
   wait();
 }
-
   return;
 }
 
+// Account Page
+const accountIntent = parseAccountIntent(transcript);
+
+if (accountIntent.action === "account_update" && pathname === "/account") {
+  const { entities } = accountIntent;
+
+  const performAccountActions = () => {
+    if (entities.logout) {
+      window.dispatchEvent(new CustomEvent("voiceLogout"));
+      const speak = new SpeechSynthesisUtterance("Logging out");
+      window.speechSynthesis.speak(speak);
+    }
+
+    if (entities.save) {
+      window.dispatchEvent(new CustomEvent("voiceAccountSave"));
+      const speak = new SpeechSynthesisUtterance("Saving your changes");
+      window.speechSynthesis.speak(speak);
+    }
+
+    const flatFields = {
+      name: entities.name,
+      phone: entities.phone,
+      address: entities.address,
+      skinType: entities.skin_profile?.skin_type,
+      skinTone: entities.skin_profile?.skin_tone,
+    };
+
+    Object.entries(flatFields).forEach(([field, value]) => {
+      if (value) {
+        window.dispatchEvent(
+          new CustomEvent("voiceAccountUpdate", {
+            detail: { field, value },
+          })
+        );
+
+        const speak = new SpeechSynthesisUtterance(
+          `${field} updated to ${value}`
+        );
+        window.speechSynthesis.speak(speak);
+      }
+    });
+  };
+  performAccountActions();
+  return;
+}
+
+if(pathname === "/account"){
+  const cleanedTranscript = transcript.toLowerCase().replace(/[^\w\s]/g, "").trim();
+  console.log("Transcript: ",cleanedTranscript);
+  const showKeywords = ["show", "available", "options", "display", "list", "what are", "tell me"];
+const hasShowIntent = showKeywords.some((word) =>
+  cleanedTranscript.includes(word)
+);
+
+const mentionsSkinType = ["skin type", "skin types"].some(p =>
+  cleanedTranscript.includes(p)
+);
+
+const mentionsSkinTone = ["skin tone", "skin tones"].some(p =>
+  cleanedTranscript.includes(p)
+);
+
+
+// Voice-only response to show dropdown options
+if (hasShowIntent && (mentionsSkinType || mentionsSkinTone)) {
+  if (mentionsSkinType) {
+    const speak = new SpeechSynthesisUtterance(
+      "Available skin types are: normal, oily, dry, and combination."
+    );
+    window.speechSynthesis.speak(speak);
+
+    const dropdown = document.querySelector('select[name="skin_type"]');
+    dropdown?.focus();
+
+    const tooltip = document.getElementById("skinTypeToolTip");
+    if (tooltip) {
+      tooltip.classList.remove("hidden");
+      setTimeout(() => tooltip.classList.add("hidden"), 5000);
+    }
+  }
+
+  if (mentionsSkinTone) {
+    const speak = new SpeechSynthesisUtterance(
+      "Available skin tones are: fair, medium, and dark."
+    );
+    window.speechSynthesis.speak(speak);
+
+    const dropdown = document.querySelector('select[name="skin_tone"]');
+    dropdown?.focus();
+
+    const tooltip = document.getElementById("skinToneToolTip");
+    if (tooltip) {
+      tooltip.classList.remove("hidden");
+      setTimeout(() => tooltip.classList.add("hidden"), 5000);
+    }
+  }
+  return; 
+}
+}
 
       // Fallback
       const fallback = new SpeechSynthesisUtterance(

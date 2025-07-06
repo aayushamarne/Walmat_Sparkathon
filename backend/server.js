@@ -13,11 +13,7 @@ app.use(express.json());
 // WO97ZuLImm4WHIwa
 // ✅ MongoDB connection
 mongoose.connect(
-  'mongodb+srv://jadhavsanyog400:WO97ZuLImm4WHIwa@cluster0.fulpgez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
+  'mongodb+srv://jadhavsanyog400:WO97ZuLImm4WHIwa@cluster0.fulpgez.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 )
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB error:", err));
@@ -27,7 +23,6 @@ app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
 
 app.use('/api', productRoutes); // ✅ use product routes
-app.use('/api/', productRoutes); 
 
 
 
