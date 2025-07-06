@@ -162,7 +162,7 @@ const VoiceAssistant = () => {
       }
 
       // Navigate to add to cart page
-      if (transcript.includes("go add to cart")) {
+      if (transcript.includes("go to add to cart")) {
         speak("Navigating to add to cart page");
         router.push("/pages/addtoCart");
         return;
