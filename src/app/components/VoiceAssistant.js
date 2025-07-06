@@ -315,6 +315,113 @@ const VoiceAssistant = () => {
         }
         return;
       }
+      //search
+      // Handle voice-based search command
+if (
+  transcript.startsWith("search for") ||
+  transcript.startsWith("find") ||
+  transcript.startsWith("look for")
+) {
+  const query = transcript
+    .replace(/^search for\s*/i, "")
+    .replace(/^find\s*/i, "")
+    .replace(/^look for\s*/i, "")
+    .trim();
+
+  const targetPath = `/search?query=${encodeURIComponent(query)}`;
+
+  const performSearchNavigation = () => {
+    if (!query) {
+      speak("Please specify what you want to search for.");
+      return;
+    }
+
+    speak(`Searching for ${query}`);
+    router.push(targetPath);
+  };
+
+  if (pathname !== "/search") {
+    speak("Taking you to the search results page");
+    router.push(targetPath);
+
+    const wait = () => {
+      if (window.location.pathname.startsWith("/search")) {
+        performSearchNavigation();
+      } else {
+        setTimeout(wait, 200);
+      }
+    };
+    wait();
+  } else {
+    performSearchNavigation();
+  }
+  return;
+}
+    //open product
+    if (transcript.includes("open") || transcript.includes("show")) {
+  const match = transcript.match(/open (.+)/i) || transcript.match(/show (.+)/i);
+  if (match && match[1]) {
+    const productTitle = match[1].trim();
+    speak(`Opening ${productTitle}`);
+    window.dispatchEvent(new CustomEvent("voiceOpenProduct", { detail: { productTitle } }));
+    return;
+  }
+}
+
+//select colour
+if (transcript.includes("select color") || transcript.includes("select colour")) {
+  const match = transcript.match(/select colou?r (.+)/i); // the `u?` makes "color" and "colour" both match
+  if (match && match[1]) {
+    const color = match[1].trim().toLowerCase();
+    console.log("🎨 Voice selected color:", color);
+    speak(`Selecting color ${color}`);
+    window.dispatchEvent(new CustomEvent("voiceSelectColor", { detail: { color } }));
+    return;
+  } else {
+    speak("Please say the color you want to select.");
+    return;
+  }
+}
+// 🎨 Flexible color selection handling
+const colorMatch =
+  transcript.match(/(?:select|choose|pick)\s+colou?r?\s*(\w+)/i) ||       // "select color red" / "choose colour black"
+  transcript.match(/(?:select|choose|pick)\s+(\w+)\s+colou?r?/i) ||       // "pick red color"
+  transcript.match(/(?:i would like to pick|i want|pick|choose)\s+(\w+)/i); // "I would like to pick blue"
+
+if (colorMatch && colorMatch[1]) {
+  const color = colorMatch[1].trim().toLowerCase();
+  console.log("🎨 Voice selected color:", color);
+  speak(`Selecting color ${color}`);
+  window.dispatchEvent(
+    new CustomEvent("voiceSelectColor", { detail: { color } })
+  );
+  return;
+}
+
+//select size
+if (transcript.includes("select size") || transcript.includes("choose size")) {
+  const match = transcript.match(/(?:select|choose) size (.+)/i);
+  if (match && match[1]) {
+    const size = match[1].trim();
+    speak(`Selecting size ${size}`);
+    window.dispatchEvent(new CustomEvent("voiceSelectSize", { detail: { size } }));
+    return;
+  }
+}
+//add to cart
+if (transcript.includes("add to cart")) {
+  speak("Adding item to cart");
+  window.dispatchEvent(new CustomEvent("voiceAddToCart"));
+  return;
+}
+//view reviews
+if (transcript.includes("view reviews")) {
+  speak("Opening customer reviews");
+  window.dispatchEvent(new CustomEvent("voiceSearchReviews"));
+  return;
+}
+
+
 
       // Fallback - Original logic
       speak("Sorry, I didn't understand that.");
