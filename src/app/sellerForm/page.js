@@ -44,10 +44,10 @@ const INITIAL_PRODUCT_DATA = {
 };
 
 const CATEGORIES = ['Shirts', 'Jeans', 'Mobiles', 'Laptops'];
-const BRANDS = ['Apple', 'Samsung', 'Nike', 'Zara'];
+const BRANDS = ['Apple', 'Samsung', 'Nike', 'Zara','Dell','HP','Allen Solly','H&M','Levis'];
 const CLOTHING_SIZES = ['S', 'M', 'L', 'XL'];
 const ELECTRONIC_SIZES = ['11 inch', '13 inch', '15.6 inch', '17 inch'];
-const COLORS = ['Red', 'Blue', 'Black', 'White'];
+const COLORS = ['Red', 'Blue', 'Black', 'White','Green','Yellow','Brown'];
 const SKIN_TYPES = ['Oily', 'Dry', 'Normal', 'Combination'];
 const SKIN_TONES = ['Fair', 'Medium', 'Dark'];
 
