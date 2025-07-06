@@ -102,57 +102,137 @@ const SearchResultsPage = () => {
   // Add event listeners for voice commands
   useEffect(() => {
     const handleOpenProduct = (event) => {
-      const { productTitle } = event.detail;
-      const product = results.find((p) =>
-        p.name.toLowerCase().includes(productTitle.toLowerCase())
-      );
-      if (product) {
-        setExpandedCard(product._id);
-        setSelectedColor("");
-        setSelectedSize("");
-        setQuantity(1);
-        setDisplayImage(product.images?.main || "/placeholder.svg");
-      } else {
-        window.speechSynthesis.speak(
-          new SpeechSynthesisUtterance(`Product ${productTitle} not found`)
-        );
-      }
-    };
+  const { productTitle } = event.detail;
+  const spoken = productTitle.toLowerCase();
 
-    const handleSelectColor = (event) => {
-      const { color } = event.detail;
-      if (expandedCard) {
-        const product = results.find((p) => p._id === expandedCard);
-        const availableColors = [...new Set(product?.variants?.map((v) => v.color))];
-        if (availableColors.includes(color)) {
-          setSelectedColor(color);
-          setSelectedSize("");
-          const variantWithColor = product?.variants?.find((v) => v.color === color);
-          setDisplayImage(variantWithColor?.image || product?.images?.main || "/placeholder.svg");
-        } else {
-          window.speechSynthesis.speak(
-            new SpeechSynthesisUtterance(`Color ${color} not available`)
-          );
-        }
-      }
-    };
+  const product = results.find((p) => {
+    const name = p.name.toLowerCase();
+    const brand = p.brand?.toLowerCase() || "";
+    const description = p.description?.toLowerCase() || "";
+
+    return (
+      name.includes(spoken) ||
+      spoken.includes(name) ||
+      brand.includes(spoken) ||
+      spoken.includes(brand) ||
+      description.includes(spoken) ||
+      spoken.split(" ").some(word => name.includes(word) || brand.includes(word))
+    );
+  });
+
+  if (product) {
+    setExpandedCard(product._id);
+    setSelectedColor("");
+    setSelectedSize("");
+    setQuantity(1);
+    setDisplayImage(product.images?.main || "/placeholder.svg");
+  } else {
+    window.speechSynthesis.speak(
+      new SpeechSynthesisUtterance(`Product ${productTitle} not found`)
+    );
+  }
+};
+
+
+  const handleSelectColor = (event) => {
+  const { color } = event.detail;
+  if (!expandedCard) return;
+
+  const product = results.find((p) => p._id === expandedCard);
+  const allVariants = product?.variants || [];
+
+  const availableColors = [...new Set(allVariants.map((v) => v.color?.toLowerCase().trim()))];
+
+  console.log("🎨 Voice requested color:", color);
+  console.log("🎨 Available colors:", availableColors);
+
+  const colorSynonyms = {
+    grey: "gray",
+    gray: "grey",
+    maroon: "red",
+    silver: "gray"
+  };
+
+  const spokenColor = color.toLowerCase().trim();
+  const normalizedColor = colorSynonyms[spokenColor] || spokenColor;
+
+  const matchedColor = availableColors.find((c) =>
+    c.includes(normalizedColor) || normalizedColor.includes(c)
+  );
+
+  if (matchedColor) {
+    console.log("✅ Matched color:", matchedColor);
+
+    const originalColor = allVariants.find(
+      (v) => v.color.toLowerCase().trim() === matchedColor
+    )?.color;
+
+    setSelectedColor(originalColor); // ✅ Use actual casing
+    setSelectedSize("");
+
+    const variant = allVariants.find(
+      (v) => v.color.toLowerCase().trim() === matchedColor
+    );
+
+    if (variant) {
+      console.log("🖼️ Variant with selected color:", variant);
+      setDisplayImage(variant?.image || product?.images?.main || "/placeholder.svg");
+    } else {
+      console.warn("⚠️ No variant found for selected color");
+    }
+
+    window.speechSynthesis.speak(
+      new SpeechSynthesisUtterance(`Selected color ${originalColor}`)
+    );
+  } else {
+    console.warn("❌ No matching color found in product");
+    window.speechSynthesis.speak(
+      new SpeechSynthesisUtterance(`Color ${spokenColor} not available`)
+    );
+  }
+};
+
+ 
 
     const handleSelectSize = (event) => {
-      const { size } = event.detail;
-      if (expandedCard) {
-        const product = results.find((p) => p._id === expandedCard);
-        const availableSizes = product?.variants
-          ?.filter((v) => v.color === selectedColor)
-          .map((v) => v.size);
-        if (availableSizes.includes(size)) {
-          setSelectedSize(size);
-        } else {
-          window.speechSynthesis.speak(
-            new SpeechSynthesisUtterance(`Size ${size} not available`)
-          );
-        }
-      }
-    };
+  const { size } = event.detail;
+  if (!expandedCard || !selectedColor) return;
+
+  const product = results.find((p) => p._id === expandedCard);
+  const variants = product?.variants || [];
+
+  const availableSizes = variants
+    .filter((v) => v.color.toLowerCase().trim() === selectedColor.toLowerCase().trim())
+    .map((v) => v.size.toLowerCase().trim());
+
+  console.log("📏 Voice requested size:", size);
+  console.log("📏 Available sizes:", availableSizes);
+
+  const spokenSize = size.toLowerCase().trim();
+
+  // Fuzzy matching
+  const matchedSize = availableSizes.find(
+    (s) => s.includes(spokenSize) || spokenSize.includes(s)
+  );
+
+  if (matchedSize) {
+    const originalSize = variants.find(
+      (v) =>
+        v.color.toLowerCase().trim() === selectedColor.toLowerCase().trim() &&
+        v.size.toLowerCase().trim() === matchedSize
+    )?.size;
+
+    setSelectedSize(originalSize);
+    window.speechSynthesis.speak(
+      new SpeechSynthesisUtterance(`Selected size ${originalSize}`)
+    );
+  } else {
+    window.speechSynthesis.speak(
+      new SpeechSynthesisUtterance(`Size ${spokenSize} not available`)
+    );
+  }
+};
+
 
     const handleVoiceAddToCart = () => {
       if (expandedCard) {
