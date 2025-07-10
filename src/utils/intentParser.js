@@ -11,7 +11,7 @@ export const processCommand = (text) => {
     const loginKeywords = ["login","sign in", "iniciar sesión", "anmelden"];
     const registerKeywords = ["register", "sign up", "registrarse", "registrieren"];
     const reorderKeywords = ["reorder", "reordenar", "nachbestellen"];
-    const accountKeywords = ["account","my profile","cuenta", "konto"];
+    const accountKeywords = ["account","profile","cuenta", "konto"];
     const homeKeywords = ["home", "go home", "homepage", "main page", "inicio", "pagina principal", "startseite", "hauptseite", "zuhause"];
 
     

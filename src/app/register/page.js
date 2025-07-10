@@ -78,8 +78,12 @@ const Register = () => {
       if (storeName && !role) {
         role = "seller";
       }
-    
-
+      const resolvedRole = form.role || role;
+    window.dispatchEvent(
+      new CustomEvent("userRoleChanged", {
+        detail: { role: resolvedRole },
+      })
+    );
       setForm((prev) => ({
         ...prev,
         email: email || prev.email,

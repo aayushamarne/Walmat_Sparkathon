@@ -1,15 +1,14 @@
-// src/utils/loginIntentParser.js
 
 export const parseLoginIntent = (text) => {
   const command = text.toLowerCase();
 
   // Multi-language support
   const emailKeywords = ["email", "correo", "e-mail"];
-  const passwordKeywords = ["password", "contraseña", "passwort"];
+  const passwordKeywords = ["password", "contrasena", "passwort"];
   const submitKeywords = ["submit", "sign in", "iniciar sesion", "einloggen", "anmelden"];
 
   // Words to skip between keyword and actual value
-  const skipWords = ["as", "to", "equal","and", "or","is" ,"=", "es", "ist", "como"]; // English, Spanish, German filler words
+  const skipWords = ["as", "to", "equal","and", "or","is" ,"=", "es", "ist", "como","be","should","set"]; // English, Spanish, German filler words
 
   const clean = (val) => val?.trim().replace(/\s+/g, "") || "";
 
@@ -33,8 +32,14 @@ export const parseLoginIntent = (text) => {
         const allKeywords = [...emailKeywords, ...passwordKeywords, ...submitKeywords];
         const stopIndex = valueWords.findIndex((w) => allKeywords.includes(w.toLowerCase()));
         const relevantWords = stopIndex !== -1 ? valueWords.slice(0, stopIndex) : valueWords;
+        const filteredWords = relevantWords.filter(
 
-        return clean(relevantWords.join(" "));
+          (word) => !skipWords.includes(word.toLowerCase())
+        );
+        const value = filteredWords.join(" ");
+  
+
+        return clean(value);
       }
     }
     return "";
