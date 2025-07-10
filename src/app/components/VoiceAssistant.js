@@ -407,7 +407,7 @@ if (colorMatch && colorMatch[1]) {
   const spokenColor = colorMatch[1].trim().toLowerCase();
 
   // ✅ Pass sourceLang as 'es' (assuming input is Spanish) and targetLang as 'en'
-  translateWithMyMemory(spokenColor, "es", "en").then((translatedColor) => {
+  translateWithMyMemory(spokenColor, "es", "en","hi").then((translatedColor) => {
     console.log("🎨 Voice color:", spokenColor);
     console.log("🌐 Translated to:", translatedColor);
 
