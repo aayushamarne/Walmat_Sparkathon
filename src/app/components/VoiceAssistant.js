@@ -384,35 +384,79 @@ if (
 }
 }
 
-//select colour
-if (transcript.includes("select color") || transcript.includes("select colour")) {
-  const match = transcript.match(/select colou?r (.+)/i); // the `u?` makes "color" and "colour" both match
-  if (match && match[1]) {
-    const color = match[1].trim().toLowerCase();
-    console.log("🎨 Voice selected color:", color);
-    speak(`Selecting color ${color}`);
-    window.dispatchEvent(new CustomEvent("voiceSelectColor", { detail: { color } }));
-    return;
-  } else {
-    speak("Please say the color you want to select.");
-    return;
-  }
-}
+// //select colour
+// if (transcript.includes("select color") || transcript.includes("select colour")) {
+//   const match = transcript.match(/select colou?r (.+)/i); // the `u?` makes "color" and "colour" both match
+//   if (match && match[1]) {
+//     const color = match[1].trim().toLowerCase();
+//     console.log("🎨 Voice selected color:", color);
+//     speak(`Selecting color ${color}`);
+//     window.dispatchEvent(new CustomEvent("voiceSelectColor", { detail: { color } }));
+//     return;
+//   } else {
+//     speak("Please say the color you want to select.");
+//     return;
+//   }
+// }
+
 // 🎨 Flexible color selection handling
+// const colorMatch =
+//   transcript.match(/(?:select|choose|pick)\s+colou?r?\s*(\w+)/i) ||       // "select color red" / "choose colour black"
+//   transcript.match(/(?:select|choose|pick)\s+(\w+)\s+colou?r?/i) ||       // "pick red color"
+//   transcript.match(/(?:i would like to pick|i want|pick|choose)\s+(\w+)/i); // "I would like to pick blue"
+
+// if (colorMatch && colorMatch[1]) {
+//   const color = colorMatch[1].trim().toLowerCase();
+//   console.log("🎨 Voice selected color:", color);
+//   speak(`Selecting color ${color}`);
+//   window.dispatchEvent(
+//     new CustomEvent("voiceSelectColor", { detail: { color } })
+//   );
+//   return;
+// }
+
 const colorMatch =
-  transcript.match(/(?:select|choose|pick)\s+colou?r?\s*(\w+)/i) ||       // "select color red" / "choose colour black"
-  transcript.match(/(?:select|choose|pick)\s+(\w+)\s+colou?r?/i) ||       // "pick red color"
-  transcript.match(/(?:i would like to pick|i want|pick|choose)\s+(\w+)/i); // "I would like to pick blue"
+  transcript.match(/(?:select|choose|pick)?\s*(?:color|colour)\s+(\w+)/i) ||
+  transcript.match(/(?:color|colour)\s+(\w+)/i);
 
 if (colorMatch && colorMatch[1]) {
-  const color = colorMatch[1].trim().toLowerCase();
-  console.log("🎨 Voice selected color:", color);
-  speak(`Selecting color ${color}`);
-  window.dispatchEvent(
-    new CustomEvent("voiceSelectColor", { detail: { color } })
-  );
+  const spokenColor = colorMatch[1].trim().toLowerCase();
+
+  // ✅ Pass sourceLang as 'es' (assuming input is Spanish) and targetLang as 'en'
+  translateWithMyMemory(spokenColor, "es", "en").then((translatedColor) => {
+    console.log("🎨 Voice color:", spokenColor);
+    console.log("🌐 Translated to:", translatedColor);
+
+    speak(`Seleccionando color ${spokenColor}`);
+    window.dispatchEvent(
+      new CustomEvent("voiceSelectColor", {
+        detail: { color: translatedColor.toLowerCase() },
+      })
+    );
+  }).catch((error) => {
+    console.error("❌ Translation error:", error);
+    speak("No pude traducir el color.");
+  });
+
   return;
 }
+
+// ✅ Updated translation function with sourceLang + targetLang
+async function translateWithMyMemory(text, sourceLang, targetLang) {
+  const response = await fetch(
+    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|${targetLang}`
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`API Error (${response.status}): ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.responseData.translatedText;
+}
+
+
 
 //select size
 if (transcript.includes("select size") || transcript.includes("choose size")) {
