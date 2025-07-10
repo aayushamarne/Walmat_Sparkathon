@@ -21,10 +21,25 @@ export default function CartPage() {
 
 
   // ✅ Load Cart and Address
+
+
+useEffect(() => {
+  const user = JSON.parse(localStorage.getItem('user')); // replace with your auth structure
+  const email = user?.email;
+  
+  if (email) {
+    const splitCart = localStorage.getItem(`cart_${email}`);
+    if (splitCart) {
+      localStorage.setItem('cart', splitCart); // override default
+      window.dispatchEvent(new Event('cartUpdated')); // notify context
+    }
+  }
+}, []);
+
   useEffect(() => {
     if (!user?.user_id) return;
 
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    const storedCart = JSON.parse(localStorage.getItem(`cart_${user.email}`)) || [];
 
     const loadCartData = async () => {
       try {
@@ -109,18 +124,28 @@ useEffect(() => {
   }, [selectedItems]);
 
   // ✅ Remove item from cart
-  const handleRemove = (index) => {
-    const updated = [...cartItems];
-    updated.splice(index, 1);
-    setCartItems(updated);
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(updated.map(({ productId, type, variant_id, quantity }) => ({
-        productId, type, variant_id, quantity
-      })))
-    );
-    updateCartCount();
-  };
+ const handleRemove = (index) => {
+  const updated = [...cartItems];
+  updated.splice(index, 1);
+  setCartItems(updated);
+
+  const minimalItems = updated.map(({ productId, type, variant_id, quantity }) => ({
+    productId, type, variant_id, quantity
+  }));
+
+  // Save to user-specific cart
+  const userKey = `cart_${user.email}`;
+  localStorage.setItem(userKey, JSON.stringify(minimalItems));
+
+  // Update to carts object as well (if needed for multi-user support in localStorage)
+  const carts = JSON.parse(localStorage.getItem("carts")) || {};
+  carts[user.user_id] = minimalItems;
+  localStorage.setItem("carts", JSON.stringify(carts));
+
+  window.dispatchEvent(new Event("cartUpdated"));
+  updateCartCount();
+};
+
 
   // ✅ Toggle selected items
   const toggleSelect = (productId, variant_id) => {
@@ -143,15 +168,17 @@ useEffect(() => {
 
   // ✅ Handle Stripe Checkout
   const handlePayment = async () => {
+ 
+
     const stripe = await stripePromise;
     const res = await axios.post("http://localhost:5000/api/checkout/create-checkout-session", {
       items: selectedItems,
       user,
     });
-  localStorage.setItem("reorder", JSON.stringify(selectedItems));
-    // Save paid variant_ids temporarily
-    const paidVariantIds = selectedItems.map(i => i.variant_id);
-    localStorage.setItem("paidItems", JSON.stringify(paidVariantIds));
+    const userKey = `cart_${user.email}`;
+localStorage.setItem("reorder", JSON.stringify(selectedItems));
+const paidVariantIds = selectedItems.map(i => i.variant_id);
+localStorage.setItem("paidItems", JSON.stringify(paidVariantIds));
 
     await stripe.redirectToCheckout({ sessionId: res.data.id });
   };
@@ -168,11 +195,12 @@ useEffect(() => {
       setCartItems(updatedCart);
       setSelectedItems([]);
 
-      localStorage.setItem("cart", JSON.stringify(
-        updatedCart.map(({ productId, type, variant_id, quantity }) => ({
-          productId, type, variant_id, quantity
-        }))
-      ));
+     localStorage.setItem(`cart_${user.email}`, JSON.stringify(
+  updatedCart.map(({ productId, type, variant_id, quantity }) => ({
+    productId, type, variant_id, quantity
+  }))
+));
+
       updateCartCount();
       localStorage.removeItem("paidItems");
     }

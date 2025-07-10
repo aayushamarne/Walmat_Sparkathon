@@ -7,37 +7,50 @@ router.post('/create-checkout-session', async (req, res) => {
   const { items, user } = req.body;
 
   try {
-    const line_items = items.map((item) => ({
-      price_data: {
-        currency: 'inr',
-        product_data: {
-          name: item.product.name,
-          images: [item.image],
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: "Items should be an array" });
+    }
+
+    console.log("Received items:", items);
+
+    const line_items = items.map((item) => {
+      if (!item.product || !item.product.name) {
+        throw new Error(`Missing product details in item: ${JSON.stringify(item)}`);
+      }
+
+      return {
+        price_data: {
+          currency: 'inr',
+          product_data: {
+            name: item.product.name,
+            images: [item.image || 'https://via.placeholder.com/150'],
+          },
+          unit_amount: Math.round(item.price * 100), // in paise
         },
-        unit_amount: item.price * 100, // in paise
+        quantity: item.quantity,
+      };
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items,
+      mode: 'payment',
+      customer_email: user.email,
+      billing_address_collection: 'required',
+      shipping_address_collection: {
+        allowed_countries: ['IN', 'US', 'CA', 'GB'],
       },
-      quantity: item.quantity,
-    }));
-
-  const session = await stripe.checkout.sessions.create({
-  payment_method_types: ['card'],
-  line_items,
-  mode: 'payment',
-  customer_email: user.email,
-  billing_address_collection: 'required',
-  shipping_address_collection: {
-    allowed_countries: ['IN', 'US', 'CA', 'GB'], // or just ['IN']
-  },
-  success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `http://localhost:3000/cancel`,
-});
-
+      success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:3000/cancel`,
+    });
 
     res.json({ id: session.id });
+
   } catch (error) {
     console.error("Stripe error:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
 
 module.exports = router;

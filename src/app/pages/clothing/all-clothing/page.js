@@ -107,36 +107,42 @@ const {user}=useAuth();
     fetchClothing();
   }, [user?.skin_profile]);
 
-  const handleAddToCart = (product, variant) => {
-    if (!variant?.variant_id) {
-      setValidationMessage("Please select both a valid color and size before adding to cart.");
-      setShowValidationModal(true);
-      return;
-    }
   
-  
-    setValidationMessage("");
-    setShowValidationModal(false);
-  
-  
-    const cartItem = {
-      productId: product._id,
-      type: product.type,
-      variant_id: variant.variant_id,
-      quantity,
-    };
-  
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push(cartItem);
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartCount(cart.length);
-  
-    setShowCartDialog(true);
-    setTimeout(() => {
-      setShowCartDialog(false);
-    }, 2000);
-    setExpandedCard(null);
+const handleAddToCart = (product, variant) => {
+  if (!variant?.variant_id) {
+    setValidationMessage("Please select both a valid color and size before adding to cart.");
+    setShowValidationModal(true);
+    return;
+  }
+
+  if (!user || !user.email) {
+    setValidationMessage("Please log in to add items to your cart.");
+    setShowValidationModal(true);
+    return;
+  }
+
+  setValidationMessage("");
+  setShowValidationModal(false);
+
+  const cartItem = {
+    productId: product._id,
+    type: product.type,
+    variant_id: variant.variant_id,
+    quantity,
   };
+
+  const userCartKey = `cart_${user.email}`;
+  const existingCart = JSON.parse(localStorage.getItem(userCartKey)) || [];
+  const updatedCart = [...existingCart, cartItem];
+
+  localStorage.setItem(userCartKey, JSON.stringify(updatedCart));
+  updateCartCount(updatedCart.length);
+
+  setShowCartDialog(true);
+  setTimeout(() => setShowCartDialog(false), 2000);
+  setExpandedCard(null);
+};
+
   
 
   const submitReview = async () => {

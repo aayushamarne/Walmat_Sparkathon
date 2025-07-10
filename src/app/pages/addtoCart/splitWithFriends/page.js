@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../../../hooks/useAuth";
 import { useCart } from "../../../../context/CartContext";
@@ -10,22 +10,29 @@ export default function SplitWithFriendsPage() {
   const { user } = useAuth();
   const [errors, setErrors] = useState([]);
   const [friendDetails, setFriendDetails] = useState([
-    { id: "", email: "" },
-    { id: "", email: "" },
+    { email: "", user_id: "" },
+    { email: "", user_id: "" },
   ]);
   const [showSplitModal, setShowSplitModal] = useState(false);
   const [validatedFriends, setValidatedFriends] = useState([]);
   const { cartItems } = useCart();
   const router = useRouter();
 
+  // Memoize currentUser and validatedFriends to prevent re-renders
+  const currentUser = useMemo(() => ({
+    email: user?.email || "",
+    user_id: user?.user_id || "",
+  }), [user?.email, user?.user_id]);
+
   const handleChangeNumFriends = (e) => {
     const count = parseInt(e.target.value);
     setNumFriends(count);
 
     const updated = [...friendDetails];
-    while (updated.length < count) updated.push({ id: "", email: "" });
+    while (updated.length < count) updated.push({ email: "", user_id: "" });
     while (updated.length > count) updated.pop();
     setFriendDetails(updated);
+    setErrors([]); // Clear errors when changing number of friends
   };
 
   const handleInputChange = (index, field, value) => {
@@ -36,152 +43,131 @@ export default function SplitWithFriendsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Friends to split with:", friendDetails);
-  
+    if (!user?.email || !user?.user_id) {
+      setErrors(["Please log in to share your cart."]);
+      console.error("User not authenticated:", user);
+      return;
+    }
+
+    if (!cartItems.length) {
+      setErrors(["Your shopping basket is empty. Add items to share."]);
+      console.warn("Empty cart, cannot proceed to split.");
+      return;
+    }
+
     try {
       const response = await fetch("http://localhost:5000/api/users/validate-friends", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          friends: friendDetails, 
-          currentUser: { id: user?.user_id, email: user?.email } 
+        body: JSON.stringify({
+          friends: friendDetails,
+          currentUser: { email: user.email, user_id: user.user_id },
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (!data || !Array.isArray(data.results)) {
-        console.error("Unexpected response structure:", data);
+        console.error("Unexpected response:", data);
         setErrors(["Something went wrong validating friends."]);
         return;
       }
-  
-      const validationResults = data.results;
-      setErrors(validationResults);
-  
-      if (validationResults.some((msg) => msg !== "")) {
+
+      setErrors(data.results);
+
+      if (data.results.some((msg) => msg !== "")) {
+        console.warn("Friend validation errors:", data.results);
         return;
       }
-      
-      setValidatedFriends(friendDetails.filter((_, i) => !data.results[i]));
+
+      // Assume backend returns validated friends with user_id
+      const validated = data.validatedFriends || friendDetails.map(friend => ({
+        email: friend.email,
+        user_id: friend.user_id || `temp_${friend.email}`, // Fallback user_id
+      }));
+      setValidatedFriends(validated);
       setShowSplitModal(true);
     } catch (error) {
-      console.error("Error:", error);
-      setErrors(["Server error during validation."]);
+      console.error("Error validating friends:", error);
+      setErrors(["Server error during validation. Please check your connection."]);
     }
   };
-  
-  const handleSplitSubmit = (assignments) => {
-    console.log("Final assignments:", {
-      user: { id: user.user_id, email: user.email },
-      friends: validatedFriends,
-      items: assignments
-    });
-    alert("Items split successfully!");
-    setShowSplitModal(false);
+
+  const handleSplitSubmit = () => {
+
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-10 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 mb-12 transition-all duration-300 hover:shadow-xl">
-  <h1 className="text-3xl font-extrabold mb-6 text-center text-gray-800 font-serif tracking-tight">
-    Split with Friends
-  </h1>
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 mb-12">
+        <h1 className="text-3xl font-extrabold mb-6 text-center text-gray-800 font-serif">Share Your Cart with Friends</h1>
 
-  <div className="mb-8">
-    <label className="block text-gray-700 font-medium mb-2 font-sans">
-      Select number of friends:
-    </label>
-    <select
-      value={numFriends}
-      onChange={handleChangeNumFriends}
-      className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all duration-200 bg-gray-50 hover:bg-gray-100 font-sans"
-    >
-      {[2, 3, 4].map((num) => (
-        <option key={num} value={num}>{num}</option>
-      ))}
-    </select>
-  </div>
-
-  <form onSubmit={handleSubmit} className="space-y-6">
-    {friendDetails.map((friend, index) => (
-      <div
-        key={index}
-        className="p-6 border border-gray-200 rounded-xl bg-green-to-br from-green-50 to-green-50 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-0.5"
-      >
-        <div className="flex items-center mb-4">
-          <div className="w-8 h-8 flex items-center justify-center bg-teal-100 text-teal-600 rounded-full mr-3 font-medium font-sans">
-            {index + 1}
+        {errors.length > 0 && (
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-xl">
+            {errors.map((error, index) => (
+              error && <p key={index}>{error}</p>
+            ))}
           </div>
-          <h3 className="text-lg font-semibold text-gray-800 font-serif">
-            Friend {index + 1}
-          </h3>
-          {errors[index] && (
-            <p className="text-red-500 text-sm ml-4 font-semibold font-sans">{errors[index]}</p>
-          )}
+        )}
+
+        <div className="mb-8">
+          <label className="block text-gray-700 font-medium mb-2">Select number of friends to share with:</label>
+          <select
+            value={numFriends}
+            onChange={handleChangeNumFriends}
+            className="w-full p-3 border border-gray-200 rounded-lg"
+            aria-label="Number of friends to share with"
+          >
+            {[1, 2, 3, 4].map((num) => (
+              <option key={num} value={num}>{num}</option>
+            ))}
+          </select>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-600 text-sm font-medium mb-1 font-sans">
-              Friend ID
-            </label>
-            <input
-              type="text"
-              value={friend.id}
-              onChange={(e) => handleInputChange(index, "id", e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all duration-200 bg-white hover:bg-gray-50 font-sans"
-              required
-              placeholder="Username"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-600 text-sm font-medium mb-1 font-sans">
-              Email
-            </label>
-            <input
-              type="email"
-              value={friend.email}
-              onChange={(e) => handleInputChange(index, "email", e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400 transition-all duration-200 bg-white hover:bg-gray-50 font-sans"
-              required
-              placeholder="email@example.com"
-            />
-          </div>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {friendDetails.map((friend, index) => (
+            <div key={index} className="p-6 border border-gray-200 rounded-xl bg-green-50 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 flex items-center justify-center bg-teal-100 text-teal-600 rounded-full mr-3">
+                  {index + 1}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800">Friend {index + 1}</h3>
+                {errors[index] && (
+                  <p className="text-red-500 text-sm ml-4">{errors[index]}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-gray-600 text-sm mb-1">Email</label>
+                <input
+                  type="email"
+                  value={friend.email}
+                  onChange={(e) => handleInputChange(index, "email", e.target.value)}
+                  className="w-full p-3 border border-gray-200 rounded-lg"
+                  required
+                  placeholder="email@example.com"
+                  aria-label={`Email for friend ${index + 1}`}
+                />
+              </div>
+            </div>
+          ))}
+
+          <button
+            type="submit"
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all duration-200 hover:scale-105"
+            aria-label="Proceed to divide cart"
+          >
+            Proceed to Divide Cart
+          </button>
+        </form>
       </div>
-    ))}
 
-    <button
-      type="submit"
-      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-teal-600 hover:to-green-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 cursor-pointer shadow-lg hover:shadow-xl transform hover:scale-105 font-sans"
-    >
-      <span>Proceed to Split</span>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-4 w-4 transition-transform group-hover:translate-x-1"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 5l7 7-7 7"
-        />
-      </svg>
-    </button>
-  </form>
-</div>
       {showSplitModal && (
         <SplitItemsModal
           friends={validatedFriends}
-          currentUser={{ id: user.user_id, email: user.email }}
-          cartItems={cartItems}
-          onClose={() => setShowSplitModal(false)}
+          currentUser={currentUser}
           onSubmit={handleSplitSubmit}
         />
       )}
