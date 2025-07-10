@@ -1,13 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
 
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes'); 
 const checkoutRoutes = require('./routes/checkout');
+const recommendRoutes = require('./routes/recommend');
 const app = express();
+
+
 app.use(cors());
 app.use(express.json());
+
 
 
 // WO97ZuLImm4WHIwa
@@ -21,6 +26,7 @@ mongoose.connect(
 //  Routes
 app.use('/api/checkout', checkoutRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api',recommendRoutes);
 
 app.use('/api', productRoutes); // ✅ use product routes
 
@@ -30,3 +36,6 @@ app.use('/api', productRoutes); // ✅ use product routes
 app.listen(5000, () => {
   console.log("🚀 Server running at http://localhost:5000");
 });
+
+require("./scheduler/recommendScheduler");
+

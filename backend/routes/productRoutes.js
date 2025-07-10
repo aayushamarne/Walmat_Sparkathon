@@ -3,6 +3,41 @@ const router = express.Router();
 const Product = require('../models/Product');
 const mongoose = require('mongoose');
 
+
+
+
+router.get('/products/search', async (req, res) => {
+  const { query } = req.query;
+
+  if (!query) return res.status(400).json({ success: false, message: 'Missing search query' });
+
+  const regexWords = query.trim().split(/\s+/).map(word => new RegExp(word, 'i'));
+
+  // Combine words using $and, and match each word to multiple fields
+  const andConditions = regexWords.map(regex => ({
+    $or: [
+      { name: regex },
+      { description: regex },
+      { brand: regex },
+      { category: regex },
+      { tags: regex }
+    ]
+  }));
+
+  try {
+    const products = await Product.find({ $and: andConditions });
+
+    if (products.length === 0) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    res.json({ success: true, products });
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // CREATE Product
 router.post('/add', async (req, res) => {
   const session = await mongoose.startSession();
@@ -76,6 +111,20 @@ router.get('/products', async (req, res) => {
   }
 });
 
+router.get('/products/top-rated', async (req, res) => {
+  try {
+    const products = await Product.find().sort({ average_rating: -1 }).limit(5);
+    res.json({ success: true, products });
+  } catch (error) {
+    console.error("Error in /top-rated:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+
+
+
+
 router.post('/products/rate/:productId', async (req, res) => {
   const { productId } = req.params;
   const { rating, review } = req.body;
@@ -138,6 +187,9 @@ router.delete('/products/:productId', async (req, res) => {
   }
 });
 
+
+
+
 // Update Variant + Price
 router.put('/products/:productId/variant/:variantId', async (req, res) => {
   const { productId, variantId } = req.params;
@@ -169,6 +221,8 @@ router.put('/products/:productId/variant/:variantId', async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
+
 
 
 

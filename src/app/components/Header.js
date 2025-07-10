@@ -1,5 +1,7 @@
 'use client';
 import React from 'react';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../../hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -8,7 +10,15 @@ import { useCart } from '../../context/CartContext';
 
 const Header = () => {
   const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
+
 const router=useRouter();
+
+const handleSearch = (e) => {
+  if (e.key === "Enter" && searchTerm.trim()) {
+    router.push(`/search?query=${encodeURIComponent(searchTerm.trim())}`);
+  }
+};
 
 const { cartCount } = useCart();
   return (
@@ -30,18 +40,21 @@ const { cartCount } = useCart();
                 <span className="font-semibold">Pickup or delivery?</span>
                 <span className="text-white text-xs truncate"></span>
               </div>
-              <span className="material-symbols-outlined ml-auto">expand_more</span>
+              
             </div>
           </div>
 
           {/* Middle: Search Bar */}
           <div className="flex-1 max-w-2xl mx-8 hidden md:block">
             <div className="relative">
-              <input
-                type="text"
-                placeholder="Search everything at Walmart online and in store"
-                className="w-full px-4 py-2 rounded-full text-gray-800 pr-12 bg-white"
-              />
+            <input
+  type="text"
+  placeholder="Search everything at Walmart online and in store"
+  className="w-full px-4 py-2 rounded-full text-gray-800 pr-12 bg-white"
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  onKeyDown={handleSearch}
+/>
               <button className="absolute px-2 right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 rounded-full transition-colors">
                 <span className="material-symbols-outlined mt-1 text-gray-800">search</span>
               </button>

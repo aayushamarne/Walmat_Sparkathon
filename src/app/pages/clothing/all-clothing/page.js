@@ -5,6 +5,7 @@ import Header from "../../../components/Header";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from '../../../../context/CartContext';
+import { useAuth } from "../../../../../hooks/useAuth";
 
 import axios from "axios";
 
@@ -33,10 +34,12 @@ const [validationMessage, setValidationMessage] = useState("");
   const [showCartDialog, setShowCartDialog] = useState(false);
 
 
+const {user}=useAuth();
 
   const router = useRouter();
 
   useEffect(() => {
+   
     const fetchClothing = async () => {
       try {
         setLoading(true);
@@ -62,13 +65,21 @@ const [validationMessage, setValidationMessage] = useState("");
               const reviews = reviewRes.data.reviews || [];
               const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
               const average = reviews.length ? (totalRating / reviews.length).toFixed(1) : null;
-    
+              
+              // Enhanced recommendation logic
+              const isRecommended =
+                user?.skin_profile &&
+                product.clothing_attributes?.skin_compatibility &&
+                product.clothing_attributes.skin_compatibility.skin_types?.toLowerCase() === user.skin_profile.skin_type?.toLowerCase() &&
+                product.clothing_attributes.skin_compatibility.skin_tones?.toLowerCase() === user.skin_profile.skin_tone?.toLowerCase();
+              
               return {
                 ...product,
                 rating: {
                   average: average ? parseFloat(average) : null,
                   count: reviews.length,
                 },
+                isRecommended,
               };
             } catch {
               return {
@@ -77,6 +88,7 @@ const [validationMessage, setValidationMessage] = useState("");
                   average: null,
                   count: 0,
                 },
+                isRecommended: false,
               };
             }
           })
@@ -93,7 +105,7 @@ const [validationMessage, setValidationMessage] = useState("");
     
 
     fetchClothing();
-  }, []);
+  }, [user?.skin_profile]);
 
   const handleAddToCart = (product, variant) => {
     if (!variant?.variant_id) {
@@ -215,32 +227,62 @@ setClothingProducts(prev =>
         {loading && <p>Loading products...</p>}
         {error && <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">{error}</div>}
         {!loading && clothingProducts.length === 0 && !error && <p>No clothing products available.</p>}
+        {!user?.skin_profile && !loading && (
+    <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4">
+      Complete your skin profile to see personalized recommendations!
+      <button
+        className="ml-2 text-blue-800 underline"
+        onClick={() => router.push("/account")}
+      >
+        Update Profile
+      </button>
+    </div>
+  )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {clothingProducts.map((product) => (
             <div
               key={product._id}
-              className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer"
+              className="border rounded-lg p-4 shadow hover:shadow-lg transition cursor-pointer relative"
               onClick={() => {
                 setExpandedCard(product._id);
-                setSelectedColor("/placeholder.svg");
+                setSelectedColor("");
                 setSelectedSize("");
                 setQuantity(1);
               }}
             >
-              <Image
-                src={product.images?.main || "/placeholder.svg"}
-                alt={product.name}
-                width={300}
-                height={300}
-                className="w-full h-60 object-cover rounded mb-3"
-              />
+              {product.isRecommended && (
+                <span className="absolute top-2 left-2 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 flex items-center gap-1">
+                  <span>✨</span>
+                  Recommended
+                </span>
+              )}
+              <div className="relative">
+                <Image
+                  src={product.images?.main || "/placeholder.svg"}
+                  alt={product.name}
+                  width={300}
+                  height={300}
+                  className="w-full h-60 object-cover rounded mb-3"
+                />
+                {product.isRecommended && (
+                  <div className="absolute top-2 right-2 bg-white bg-opacity-90 rounded-full p-1 shadow-sm">
+                    <span className="text-green-500 text-lg">💚</span>
+                  </div>
+                )}
+              </div>
               <h3 className="text-lg font-semibold">{product.name}</h3>
               <p className="text-gray-600">{product.brand}</p>
               <p className="text-blue-600 font-bold mt-1">₹{product.price?.discounted || product.price?.original}</p>
               <p className="text-yellow-500 font-medium mt-1">
                 ⭐ {product.rating?.average?.toFixed(1) || "N/A"} ({product.rating?.count || 0} ratings)
               </p>
+              {product.isRecommended && (
+                <p className="text-green-600 text-sm font-medium mt-2 flex items-center gap-1">
+                 
+                  Perfect for your skin profile
+                </p>
+              )}
               <p className="mt-2 text-sm text-gray-800">{product.description}</p>
             </div>
           ))}
@@ -271,13 +313,21 @@ setClothingProducts(prev =>
         </button>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <Image
-            src={displayImage}
-            alt={`${product.name} - ${selectedColor || 'Default'}`}
-            width={500}
-            height={500}
-            className="w-full h-80 object-cover rounded"
-          />
+          <div className="relative">
+            <Image
+              src={displayImage}
+              alt={`${product.name} - ${selectedColor || 'Default'}`}
+              width={500}
+              height={500}
+              className="w-full h-80 object-cover rounded"
+            />
+            {product.isRecommended && (
+              <div className="absolute top-3 left-3 bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-bold px-3 py-2 rounded-full shadow-lg flex items-center gap-2">
+                <span>✨</span>
+                Recommended for You
+              </div>
+            )}
+          </div>
           <div>
             <h3 className="text-2xl font-bold">{product.name}</h3>
             <p className="text-gray-600">{product.brand}</p>
@@ -287,7 +337,17 @@ setClothingProducts(prev =>
             <p className="text-yellow-500 font-medium mt-1">
               ⭐ {product.rating?.average?.toFixed(1) || "N/A"} ({product.rating?.count || 0} ratings)
             </p>
-
+            {product.isRecommended && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+                <p className="text-green-700 font-semibold flex items-center gap-2">
+                  <span className="text-lg">🎯</span>
+                  Perfect Match for Your Profile
+                </p>
+                <p className="text-green-600 text-sm mt-1">
+                  Recommended for {user?.skin_profile?.skin_type} skin type and {user?.skin_profile?.skin_tone} skin tone
+                </p>
+              </div>
+            )}
             <p className="mt-2 text-sm text-gray-800">{product.description}</p>
 
             {(!selectedColor || !selectedSize) && (

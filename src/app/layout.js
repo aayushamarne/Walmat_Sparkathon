@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Head from "next/head";
 import VoiceAssistant from "./components/VoiceAssistant";
+
+
 import { AuthProvider } from "../../hooks/useAuth";
 import { CartProvider } from "../context/CartContext";
 
@@ -29,6 +31,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
 
       </head>
       <body

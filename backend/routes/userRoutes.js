@@ -1,6 +1,8 @@
+
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+
 
 // Register
 router.post('/register', async (req, res) => {
@@ -95,6 +97,48 @@ router.post("/address/:user_id", async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+router.post("/validate-friends", async (req, res) => {
+  try {
+    const { friends,currentUser } = req.body;
+    const seenIds = new Set();
+    const seenEmails = new Set();
+
+    const results = await Promise.all(
+      friends.map(async ({ id, email }, index) => {
+        // 1. Check if ID or Email matches current user (optional: pass user info from client)
+        if (
+          id === currentUser?.user_id || // if using auth
+          email === currentUser?.email
+        ) {
+          return "Cannot add Yourself";
+        }
+
+        // 2. Check for duplicates in the list
+        if (seenIds.has(id) || seenEmails.has(email)) {
+          return "Duplicate friend ID or email";
+        }
+
+        seenIds.add(id);
+        seenEmails.add(email);
+
+        // 3. Check if user exists in DB
+        const user = await User.findOne({ user_id: id, email });
+        if (!user) {
+          return "Invalid user ID or email";
+        }
+        return ""; // No error
+      })
+    );
+
+    return res.status(200).json({ results });
+  } catch (err) {
+    console.error("Validation error:", err);
+    return res.status(500).json({ message: "Server error during validation" });
+  }
+});
+
+
 
 
 module.exports = router;
