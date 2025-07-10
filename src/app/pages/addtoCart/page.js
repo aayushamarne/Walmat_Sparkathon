@@ -12,7 +12,6 @@ export default function CartPage() {
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [address, setAddress] = useState("");
@@ -124,17 +123,23 @@ useEffect(() => {
   };
 
   // ✅ Toggle selected items
-  const toggleSelect = (variant_id) => {
-    if (selectedItems.find((item) => item.variant_id === variant_id)) {
-      setSelectedItems(selectedItems.filter((item) => item.variant_id !== variant_id));
+  const toggleSelect = (productId, variant_id) => {
+    const key = `${productId}-${variant_id}`;
+    const exists = selectedItems.find(item => `${item.productId}-${item.variant_id}` === key);
+  
+    if (exists) {
+      setSelectedItems(selectedItems.filter(item => `${item.productId}-${item.variant_id}` !== key));
     } else {
-      const selectedItem = cartItems.find((item) => item.variant_id === variant_id);
+      const selectedItem = cartItems.find(item => item.productId === productId && item.variant_id === variant_id);
       if (selectedItem) setSelectedItems([...selectedItems, selectedItem]);
     }
   };
-  const toggleDeselect = (variant_id) => {
-    setSelectedItems(selectedItems.filter((item) => item.variant_id !== variant_id));
+  
+  const toggleDeselect = (productId, variant_id) => {
+    const key = `${productId}-${variant_id}`;
+    setSelectedItems(selectedItems.filter(item => `${item.productId}-${item.variant_id}` !== key));
   };
+  
 
   // ✅ Handle Stripe Checkout
   const handlePayment = async () => {
@@ -202,10 +207,19 @@ useEffect(() => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 flex flex-row">
+          <div className="me-58">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Shopping Cart</h1>
           <p className="text-gray-600">Review your items and proceed to checkout</p>
+          </div>
+          <button
+        onClick={() => router.push("/pages/addtoCart/splitWithFriends")}
+        className="sm:w-auto lg:w-1/5  md:w-1/7 mb-7 py-3 px-6 bg-gradient-to-r from-green-400 to-green-600 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg cursor-pointer"
+      >
+        Split With Friends
+      </button>
         </div>
+        
 
         {/* Cart Content */}
         {cartItems.length === 0 ? (
@@ -235,18 +249,21 @@ useEffect(() => {
                 
                 <div className="divide-y divide-gray-200">
                   {cartItems.map((item, index) => {
-                    const isSelected = selectedItems.some((i) => i.variant_id === item.variant_id);
+                    const isSelected = selectedItems.some(
+                      (i) => i.productId === item.productId && i.variant_id === item.variant_id
+                    );
                     return (
                       <div key={index} className={`p-6 transition-all duration-200 ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'}`}>
                         <div className="flex items-start space-x-4">
                           {/* Checkbox */}
                           <div className="flex items-center h-20">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleSelect(item.variant_id)}
-                              className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                            />
+                          <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(item.productId, item.variant_id)}
+                          className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+/>
+
                           </div>
 
                           {/* Product Image */}
@@ -284,6 +301,7 @@ useEffect(() => {
                       </div>
                     );
                   })}
+                  
                 </div>
               </div>
             </div>
