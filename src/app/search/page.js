@@ -29,6 +29,8 @@ const SearchResultsPage = () => {
   const [activeProduct, setActiveProduct] = useState(null);
   const [allReviews, setAllReviews] = useState([]);
   const [displayImage, setDisplayImage] = useState("");
+  const [showTryOnSpinner, setShowTryOnSpinner] = useState(false);
+
   const [showSuccess, setShowSuccess] = useState(false);
   const [showCartDialog, setShowCartDialog] = useState(false);
 
@@ -384,10 +386,19 @@ const SearchResultsPage = () => {
     }
   };
 
+ 
+
+
   return (
     <>
       <Header />
       <Navbar />
+         {showTryOnSpinner && (
+  <div className="fixed inset-0 z-[999] bg-black bg-opacity-60 flex items-center justify-center">
+    <div className="w-16 h-16 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+    <p className="text-white mt-4  absolute bottom-10 text-lg font-semibold">Trying on...</p>
+  </div>
+)}
       <div className="max-w-7xl mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold mb-4">Search Results for "{query}"</h1>
         <p className="mb-8">Browse items matching your search.</p>
@@ -530,6 +541,7 @@ const SearchResultsPage = () => {
                         </div>
                       </div>
                     )}
+                    
 
                     {/* Quantity and Add to Cart */}
                     <div className="mt-4 flex items-center gap-3">
@@ -570,6 +582,23 @@ const SearchResultsPage = () => {
                         Add Review
                       </button>
                     </div>
+
+
+                    <div className="mt-6">
+  <button
+    className="w-full sm:w-1/2 mx-auto bg-indigo-700 text-white px-6 py-2 rounded hover:bg-indigo-600"
+    onClick={() => {
+      setShowTryOnSpinner(true);
+      setTimeout(() => {
+        setShowTryOnSpinner(false);
+        alert("Try On complete (replace this with actual feature)");
+      }, 3000); // Simulate try-on process
+    }}
+  >
+    👕 Try On
+  </button>
+</div>
+
 
                     <div className="mt-4 flex justify-center">
                       <button
@@ -788,8 +817,11 @@ const SearchResultsPage = () => {
           </div>
         </div>
       )}
+ 
     </>
   );
 };
+
+   
 
 export default SearchResultsPage;
