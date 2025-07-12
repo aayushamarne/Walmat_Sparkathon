@@ -2,16 +2,63 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { useRef } from "react";
 
 const Account = () => {
   const { user, updateProfile, logout } = useAuth();
   const [form, setForm] = useState(user);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
-
+  const formRef = useRef(form);
+ 
+  
   useEffect(() => {
     if (user) setForm(user);
+
+    const handleVoiceUpdate = (e) => {
+      const { field, value } = e.detail;
+
+      // Skin fields are nested under form.skin_profile
+      if (field === "skinTone" || field === "skinType") {
+        setForm((prev) => ({
+          ...prev,
+          skin_profile: {
+            ...(prev.skin_profile || {}),
+            [field === "skinTone" ? "skin_tone" : "skin_type"]: value,
+          },
+        }));
+      } else {
+        setForm((prev) => ({
+          ...prev,
+          [field === "fullName" ? "name" : field]: value,
+        }));
+      }
+    };
+
+    const handleVoiceSave = () => {
+        handleUpdate();
+    };
+
+    const handleVoiceLogout = () => {
+      logout();
+      router.push("/login");
+    };
+
+    window.addEventListener("voiceAccountUpdate", handleVoiceUpdate);
+    window.addEventListener("voiceAccountSave", handleVoiceSave);
+    window.addEventListener("voiceLogout", handleVoiceLogout);
+
+    return () => {
+      window.removeEventListener("voiceAccountUpdate", handleVoiceUpdate);
+      window.removeEventListener("voiceAccountSave", handleVoiceSave);
+      window.removeEventListener("voiceLogout", handleVoiceLogout);
+    };
   }, [user]);
+  
+  useEffect(() => {
+    formRef.current = form;
+  }, [form]);
+  
 
   if (!user) {
     return (
@@ -64,10 +111,12 @@ const Account = () => {
   };
 
   const handleUpdate = async () => {
-    await updateProfile(form);
+    
+    await updateProfile(formRef.current);
+    setForm({ ...formRef.current }); // Refresh UI manually
     alert("Profile updated!");
   };
-
+  
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-7xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
@@ -174,6 +223,7 @@ const Account = () => {
                 <label className="block text-sm font-medium text-gray-700">Skin Type</label>
                 <select
                   name="skin_type"
+                  // ref={skinTypeRef}
                   value={form.skin_profile?.skin_type || "normal"}
                   onChange={handleSkinChange}
                   className="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
@@ -183,11 +233,15 @@ const Account = () => {
                   <option value="oily">Oily</option>
                   <option value="combination">Combination</option>
                 </select>
+                <span id="skinTypeToolTip" className="text-sm text-gray-500 hidden">
+               Options: Normal, Oily, Dry, Combination</span>
+                                                        
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Skin Tone</label>
                 <select
                   name="skin_tone"
+                  // ref={skinToneRef}
                   value={form.skin_profile?.skin_tone || "medium"}
                   onChange={handleSkinChange}
                   className="w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
@@ -196,6 +250,9 @@ const Account = () => {
                   <option value="medium">Medium</option>
                   <option value="dark">Dark</option>
                 </select>
+                <span id="skinToneToolTip" className="text-sm text-gray-500 hidden">
+                Options: Fair , Medium , Dark</span>
+
               </div>
             </div>
           </section>
